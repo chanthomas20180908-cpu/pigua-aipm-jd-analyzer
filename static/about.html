@@ -1,0 +1,174 @@
+<!--
+目的：展示“劈瓜”项目的个人介绍与能力说明页。
+定义：提供 `/about` 路由使用的卡片式 dashboard 静态页面。
+范围包括：
+- Hero、项目说明、分析流程、12 维判断、规划、技术栈和跳转卡片。
+范围不包括：
+- 不承载 JD 分析请求逻辑，不渲染实时接口数据。
+使用与修改规则：
+- 结构类名变更时同步 `about.css` 和 `about.js`。
+-->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="劈瓜项目展示页：介绍 AI 产品经理 JD 分析工具的定位、v4 工作流和技术栈。"
+    />
+    <meta property="og:title" content="劈瓜 | 项目展示" />
+    <meta property="og:description" content="一个把 AI 产品经理 JD 拆成业务链路、职责和风险的分析工具。" />
+    <meta property="og:image" content="/static/assets/capybara/capybara-grid-og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>劈瓜 | About</title>
+    <link rel="icon" type="image/png" href="/static/assets/favicon/favicon.png" />
+    <script src="/static/theme.js"></script>
+    <link rel="stylesheet" href="/static/theme.css" />
+    <link rel="stylesheet" href="/static/about.css" />
+  </head>
+  <body>
+    <div class="about-shell">
+      <header class="about-topbar reveal" style="--delay: 0.05s">
+        <a class="brand-chip" href="/">劈瓜</a>
+        <button class="theme-toggle" id="theme-toggle" type="button" data-theme-toggle aria-label="切换主题">
+          夜色切换
+        </button>
+      </header>
+
+      <main class="about-main">
+        <section class="hero-panel reveal" style="--delay: 0.1s">
+          <div class="hero-copy">
+            <p class="eyebrow">AI PM Resume Analyzer / Personal Showcase</p>
+            <h1>劈瓜</h1>
+            <p class="hero-lead">
+              一个给 AI 产品经理看的 JD 拆解台。它不只判断这份岗位像不像真 AI，也会把岗位背后的业务链路、角色职责和风险气味摊开给你看。
+            </p>
+            <div class="hero-actions">
+              <a class="hero-button primary" href="/">回到分析入口</a>
+              <a class="hero-button secondary" href="/meta-model">查看元模型</a>
+            </div>
+          </div>
+          <aside class="hero-mascot">
+            <div class="mascot-frame">
+              <img
+                src="/static/assets/capybara/capybara-grid.png"
+                alt="劈瓜吉祥物九宫格"
+                width="360"
+                height="360"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <p>
+              记忆点不是“大模型”三个字，而是这只卡皮巴拉如何把一份 JD 拆成可判断、可解释、可追问的结构。
+            </p>
+          </aside>
+        </section>
+
+        <section class="card-grid">
+          <article class="feature-card reveal" id="story" style="--delay: 0.16s">
+            <p class="card-kicker">01 / 项目介绍</p>
+            <h2>从“像 AI”到“做什么 AI”</h2>
+            <p>
+              劈瓜面向想判断岗位真伪、理解岗位重心和面试抓手的产品经理。相比只做关键词匹配，它更关心岗位实际价值流、工作项和业务实体。
+            </p>
+          </article>
+
+          <article class="feature-card reveal" style="--delay: 0.22s">
+            <p class="card-kicker">02 / 三步体验</p>
+            <h2>放瓜、劈瓜、看瓜</h2>
+            <ul class="bullet-list">
+              <li>放瓜：粘贴 JD 文本。</li>
+              <li>劈瓜：v4 工作流串行跑三大模块。</li>
+              <li>看瓜：图形化建模、12 维判断、风险提示和口语化结论一起返回。</li>
+            </ul>
+          </article>
+
+          <article class="feature-card reveal" id="workflow" style="--delay: 0.28s">
+            <p class="card-kicker">03 / v4 三模块</p>
+            <h2>先建模，再质检，最后翻成人话</h2>
+            <ol class="number-list">
+              <li><strong>建模分析</strong>：元素建模 + 岗位核心判断。</li>
+              <li><strong>质量检查</strong>：识别 3 个潜在风险点。</li>
+              <li><strong>口语化总结</strong>：给出高密度、可传播的岗位判断。</li>
+            </ol>
+          </article>
+
+          <article class="feature-card reveal accent-card" id="judgment" style="--delay: 0.34s">
+            <p class="card-kicker">04 / 12 维核心判断</p>
+            <h2>不是打分表，是岗位重心地图</h2>
+            <div class="tag-cloud" aria-label="12维判断标签云">
+              <span>岗位定位</span>
+              <span>业务价值</span>
+              <span>AI 含量</span>
+              <span>权责边界</span>
+              <span>协作复杂度</span>
+              <span>交付节奏</span>
+              <span>数据要求</span>
+              <span>技术理解</span>
+              <span>行业门槛</span>
+              <span>候选人优势</span>
+              <span>隐性风险</span>
+              <span>面试抓手</span>
+            </div>
+          </article>
+
+          <article class="feature-card reveal" id="next" style="--delay: 0.4s">
+            <p class="card-kicker">05 / 未来规划</p>
+            <h2>20/80 先做能显著提质的那部分</h2>
+            <div class="timeline">
+              <div>
+                <strong>Now</strong>
+                <p>稳定 v4 主链路与 D3 图谱展示。</p>
+              </div>
+              <div>
+                <strong>Next</strong>
+                <p>让离线 Loop 更系统地优化子模块 prompt。</p>
+              </div>
+              <div>
+                <strong>Later</strong>
+                <p>把岗位判断沉淀成更可复用的元模型与案例库。</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="feature-card reveal" style="--delay: 0.46s">
+            <p class="card-kicker">06 / 技术栈</p>
+            <h2>够用、透明、方便调试</h2>
+            <ul class="bullet-list">
+              <li>FastAPI 提供接口与静态页路由。</li>
+              <li>HTML / CSS / 原生 JS 无构建链路。</li>
+              <li>D3.js 本地图谱渲染模块一结果。</li>
+              <li>OpenAI 兼容接口承载 v4 LLM 工作流。</li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="jump-grid">
+          <a class="jump-card reveal" href="/meta-model" style="--delay: 0.52s">
+            <p class="card-kicker">深入一层</p>
+            <h2>元模型详情</h2>
+            <p>查看 9 节点流程图、12 维判断展开和业务能力树。</p>
+          </a>
+          <a
+            class="jump-card reveal"
+            href="/static/loop-iteration-explainer.html"
+            style="--delay: 0.58s"
+          >
+            <p class="card-kicker">持续优化</p>
+            <h2>迭代 Loop 说明</h2>
+            <p>理解线下 evaluator-optimizer loop 如何推动 prompt 迭代。</p>
+          </a>
+          <a class="jump-card reveal" href="/" style="--delay: 0.64s">
+            <p class="card-kicker">回到入口</p>
+            <h2>继续劈瓜</h2>
+            <p>保留主入口不变，直接回到现有 `/analyze/v4` 体验链路。</p>
+          </a>
+        </section>
+      </main>
+    </div>
+    <script src="/static/about.js"></script>
+  </body>
+</html>

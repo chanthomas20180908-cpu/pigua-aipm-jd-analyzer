@@ -1,0 +1,274 @@
+<!--
+目的：当前联调页面结构。
+定义：当前首页和 /analyze/v4 前端联调页的 HTML 结构。
+范围包括：
+- 输入区、loading 区、结果区和静态资源引用。
+范围不包括：
+- 不写业务请求逻辑或图谱算法。
+使用与修改规则：
+- 资源路径变化需同步 app/main.py 静态挂载和 JS/CSS 文件。
+-->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="劈瓜是给 AI 产品经理的 JD 分析工具，输出岗位建模、风险质检和口语化总结。"
+    />
+    <meta property="og:title" content="劈瓜 | AI 产品经理 JD 分析工具" />
+    <meta property="og:description" content="粘贴 JD，查看 v4 建模图谱、12 维判断、风险点和总结。" />
+    <meta property="og:image" content="/static/assets/capybara/capybara-grid-og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>劈瓜 | AI 产品经理 JD 分析工具</title>
+    <link rel="icon" type="image/png" href="/static/assets/favicon/favicon.png" />
+    <script src="/static/theme.js"></script>
+    <link rel="stylesheet" href="/static/theme.css" />
+    <link rel="stylesheet" href="/static/design-preview-02.css" />
+    <script src="/static/d3.v7.min.js"></script>
+    <script src="/static/graph-renderer.js"></script>
+    <script src="/static/field-labels.js"></script>
+    <script src="/static/mammoth.browser.min.js"></script>
+  </head>
+  <body>
+    <main class="preview-page" id="preview-page" data-state="input">
+      <div class="corner-brand" aria-hidden="true">劈瓜</div>
+
+      <header class="topbar" aria-label="页面说明">
+        <div class="brand-lockup">
+          <div class="brand-row">
+            <img
+              class="hero-mark"
+              src="/static/assets/pigua/frame-01.png"
+              alt="拿着刀和西瓜的卡皮巴拉"
+            />
+            <h1>劈瓜</h1>
+          </div>
+          <p class="hero-subtitle">给AI产品经理的JD分析工具</p>
+        </div>
+        <div class="topbar-actions">
+          <a class="topbar-link about-toggle" href="/about">
+            About
+          </a>
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="切换主题">
+            夜色切换
+          </button>
+        </div>
+      </header>
+
+      <section class="view input-view" id="input-view" aria-labelledby="input-step-title">
+        <form class="input-card" id="preview-form">
+          <div class="card-head">
+            <p class="section-label input-step-title" id="input-step-title">Step 01 / 放瓜</p>
+          </div>
+
+          <div class="input-grid">
+            <label class="field">
+              <span class="field-head">
+                <span>🍉 这里放岗位描述</span>
+                <span class="sample-jd-row" aria-label="示例岗位描述">
+                  <span>试试示例：</span>
+                  <span class="sample-jd-chips">
+                    <button class="sample-jd-chip" type="button" data-sample-jd="ai_agent">AI Agent 产品</button>
+                    <button class="sample-jd-chip" type="button" data-sample-jd="growth">增长产品</button>
+                    <button class="sample-jd-chip" type="button" data-sample-jd="data_platform">数据中台</button>
+                  </span>
+                </span>
+              </span>
+              <textarea
+                id="jd-text"
+                rows="10"
+                placeholder="支持粘贴文字或拖入 .txt / .md / .docx 文件（最大 500KB）。
+看看它是真材实料，还是生瓜蛋子。"
+              ></textarea>
+            </label>
+          </div>
+
+          <details class="history-panel" id="history-panel" hidden>
+            <summary>最近劈过的瓜</summary>
+            <div class="history-panel-heading">
+              <p class="history-panel-hint">仅保存在这台设备的浏览器中，点击可回填 JD。</p>
+              <button class="history-clear-button" id="history-clear-button" type="button">清空历史</button>
+            </div>
+            <ul class="history-list" id="history-list"></ul>
+          </details>
+
+          <p class="input-feedback" id="form-error" aria-live="polite" hidden>先放岗位描述，才能劈瓜。</p>
+          <button class="primary-button" type="submit">劈开看看</button>
+        </form>
+      </section>
+
+      <section class="view loading-view" id="loading-view" aria-labelledby="loading-title" hidden>
+        <div class="loading-card">
+          <div class="card-head">
+            <h2 class="section-label input-step-title" id="loading-title">Step 02 / 劈瓜</h2>
+          </div>
+
+          <div class="loading-hero">
+            <div class="loading-mascot" aria-label="卡皮巴拉正在劈瓜">
+              <img
+                id="mascot-frame"
+                src="/static/assets/pigua/frame-01.png"
+                alt="卡皮巴拉正在劈开一只职位瓜"
+              />
+              <div class="mascot-placeholder" id="mascot-placeholder" hidden>
+                <strong>卡皮巴拉劈瓜.gif</strong>
+                <span>把多模态帧图放到 static/assets/pigua/ 后会自动播放。</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="loading-status" id="loading-status" role="status" aria-live="polite">
+            分析通常需要 60-90 秒，卡皮巴拉正在卖力劈瓜...
+          </p>
+
+          <div class="loading-progress" aria-label="分析步骤">
+            <div class="loading-progress-track" aria-hidden="true">
+              <div class="loading-progress-fill"></div>
+            </div>
+            <ol class="loading-progress-steps">
+              <li>
+                <span class="progress-dot" aria-hidden="true"></span>
+                <strong>看瓜皮</strong>
+                <em>提取 JD 业务元素</em>
+              </li>
+              <li>
+                <span class="progress-dot" aria-hidden="true"></span>
+                <strong>掂重量</strong>
+                <em>生成岗位核心判断</em>
+              </li>
+              <li>
+                <span class="progress-dot" aria-hidden="true"></span>
+                <strong>找吸铁石</strong>
+                <em>质检潜在岗位风险</em>
+              </li>
+              <li>
+                <span class="progress-dot" aria-hidden="true"></span>
+                <strong>看瓜瓤</strong>
+                <em>整理口语化结论</em>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="view result-view" id="result-view" aria-labelledby="result-title" hidden>
+        <div class="result-output-card">
+          <div class="card-head result-output-head">
+            <h2 class="section-label input-step-title" id="result-title">Step 03 / 看瓜</h2>
+          </div>
+          <aside class="sample-banner" id="sample-banner" hidden aria-label="前端验收样例说明">
+            <strong>冻结验收样例</strong>
+            <span id="sample-banner-detail">使用生产渲染器加载，不调用 LLM。</span>
+          </aside>
+          <div class="result-export-toolbar" id="result-export-toolbar" hidden aria-label="结果导出">
+            <button class="quiet-button export-button" type="button" id="download-json-button">
+              下载 JSON
+            </button>
+            <button class="quiet-button export-button" type="button" id="download-markdown-button">
+              下载 Markdown
+            </button>
+            <button class="quiet-button export-button" type="button" id="copy-trace-button">
+              复制 trace
+            </button>
+            <span class="export-status" id="export-status" role="status" aria-live="polite"></span>
+          </div>
+          <div id="result-summary" aria-label="分析结论"></div>
+
+          <!-- D3 图谱容器 -->
+          <details class="graph-card result-disclosure" id="graphCard" open hidden>
+            <summary class="result-disclosure-summary">
+              <span class="graph-summary-title">建模图谱</span>
+              <span class="graph-tabbar" aria-label="图谱视图切换">
+                <button class="graph-view-btn active" type="button" data-view="1">关系图</button>
+                <button class="graph-view-btn" type="button" data-view="2">流程图</button>
+                <button class="graph-view-btn" type="button" data-view="3">CRUD 矩阵</button>
+              </span>
+            </summary>
+            <div class="graph-header-actions" aria-label="图谱视图控制">
+              <button
+                class="graph-fullscreen-toggle"
+                type="button"
+                id="graph-fullscreen-toggle"
+                aria-controls="graphCard"
+                aria-pressed="false"
+              >全屏查看</button>
+            </div>
+            <div class="result-disclosure-body">
+            <div class="view-pane active" data-view="1">
+              <div class="graph-toolbar">
+                <span style="font-size:11px;color:var(--muted);margin-right:4px;">筛选:</span>
+                <div class="filter-group">
+                  <button class="filter-btn vs active" data-type="VS">价值流</button>
+                  <button class="filter-btn wi active" data-type="WI">工作事项</button>
+                  <button class="filter-btn enj active" data-type="ENJ">业务实体</button>
+                  <button class="filter-btn cap active" data-type="CAP">能力</button>
+                </div>
+                <button class="filter-btn show-all" id="btnFit">一屏看清</button>
+              </div>
+              <div class="graph-svg-wrap" id="svgWrap">
+                <div class="graph-tooltip" id="tooltip"></div>
+                <div class="graph-zoom-controls" aria-label="关系图缩放控制">
+                  <button class="graph-zoom-button" type="button" data-graph-zoom="in" aria-label="放大关系图">＋</button>
+                  <button class="graph-zoom-button" type="button" data-graph-zoom="out" aria-label="缩小关系图">－</button>
+                </div>
+              </div>
+              <div class="legend-row" id="legend1">
+                <span style="font-weight:600;">图例</span>
+                <span class="legend-item"><span class="legend-swatch vs"></span>价值流</span>
+                <span class="legend-item"><span class="legend-swatch wi"></span>工作事项</span>
+                <span class="legend-item"><span class="legend-swatch enj"></span>业务实体</span>
+                <span class="legend-item"><span class="legend-swatch cap"></span>能力</span>
+                <span class="legend-item"><span class="legend-line contains"></span>包含</span>
+                <span class="legend-item"><span class="legend-line operates"></span>CRUD操作</span>
+                <span class="legend-item"><span class="legend-line requires"></span>需要能力</span>
+              </div>
+            </div>
+
+            <div class="view-pane" data-view="2" hidden>
+              <div class="graph-toolbar">
+                <span style="font-size:11px;color:var(--muted);">流程图 — 价值流内工作事项顺序</span>
+              </div>
+              <div class="swimlane-wrap" id="swimlaneWrap"></div>
+              <div class="legend-row" id="legend2" hidden>
+                <span style="font-weight:600;">图例</span>
+                <span class="legend-item"><span class="legend-line contains"></span>价值流边界</span>
+                <span class="legend-item"><span class="legend-swatch wi"></span>工作事项</span>
+                <span class="legend-item"><span class="legend-line contains"></span>流程顺序</span>
+              </div>
+            </div>
+
+            <div class="view-pane" data-view="3" hidden>
+              <div class="graph-toolbar">
+                <span style="font-size:11px;color:var(--muted);">CRUD 矩阵 — 工作事项 × 业务实体 / 能力</span>
+              </div>
+              <div class="matrix-wrap" id="matrixWrap"></div>
+              <div class="legend-row" id="legend3" hidden>
+                <span style="font-weight:600;">CRUD</span>
+                <span class="legend-item"><span class="legend-swatch" style="background:#2f8d5b;"></span>C 创建</span>
+                <span class="legend-item"><span class="legend-swatch" style="background:#8bb8a0;"></span>R 读取</span>
+                <span class="legend-item"><span class="legend-swatch" style="background:#d69035;"></span>U 更新</span>
+                <span class="legend-item"><span class="legend-swatch" style="background:#a0472d;"></span>D 删除</span>
+                <span class="legend-item"><span class="legend-swatch" style="background:#2f8d5b;border-radius:2px;"></span>✓ 需要该能力</span>
+              </div>
+            </div>
+
+            <div class="detail-panel" id="detailPanel">
+              <button class="dp-close" id="dpClose">&times;</button>
+              <div id="dpContent"></div>
+            </div>
+            </div>
+          </details>
+
+          <div id="result-content" aria-label="分析结果"></div>
+
+          <button class="primary-button result-action" type="button" id="result-reset-button">换个瓜再劈</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/design-preview-02.js"></script>
+  </body>
+</html>

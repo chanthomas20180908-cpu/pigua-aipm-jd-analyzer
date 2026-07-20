@@ -1,0 +1,1159 @@
+<!--
+目的：poc-d3-graph.html 静态页面。
+定义：static/poc-d3-graph.html 是 FastAPI 直接服务的静态 HTML 文件。
+范围包括：
+- 页面结构和静态资源引用。
+范围不包括：
+- 不写后端分析逻辑。
+使用与修改规则：
+- 修改资源引用时同步同名 JS/CSS 或 app/main.py 入口。
+-->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POC — D3 力导向图 · 模块一建模分析</title>
+<style>
+  :root {
+    --bg: #f3efe6;
+    --surface: #fffaf1;
+    --ink: #1f2722;
+    --muted: #667067;
+    --green: #1f5b46;
+    --melon: #2f8d5b;
+    --amber: #d69035;
+    --danger: #a0472d;
+    --line: rgba(31,39,34,0.12);
+    --shadow: 0 4px 24px rgba(43,50,42,0.10);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC","Hiragino Sans GB","Noto Sans SC",sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* header */
+  .poc-header {
+    padding: 24px 32px 0;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .poc-badge {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    color: var(--melon); background: #dfe9df;
+    padding: 3px 10px; border-radius: 99px;
+  }
+  .poc-header h1 {
+    font-size: 18px; font-weight: 600;
+  }
+
+  /* main layout */
+  .main-wrap {
+    display: flex; flex: 1; gap: 0;
+    padding: 16px 32px 32px;
+  }
+
+  /* graph card */
+  .graph-card {
+    flex: 1; background: var(--surface);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    display: flex; flex-direction: column; overflow: hidden;
+    min-width: 0;
+  }
+  .graph-toolbar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .filter-group {
+    display: flex; gap: 4px;
+  }
+  .filter-btn {
+    font-size: 11px; font-family: inherit;
+    padding: 5px 10px; border-radius: 99px;
+    border: 1px solid var(--line); background: #fff;
+    color: var(--ink); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--muted); }
+  .filter-btn.active { color: #fff; border-color: transparent; }
+  .filter-btn.vs.active { background: var(--green); }
+  .filter-btn.wi.active { background: var(--melon); }
+  .filter-btn.enj.active { background: var(--amber); }
+  .filter-btn.cap.active { background: var(--danger); }
+  .filter-btn.show-all {
+    margin-left: 8px; font-weight: 600; border-color: var(--muted);
+  }
+  .graph-svg-wrap {
+    flex: 1; position: relative; cursor: grab;
+  }
+  .graph-svg-wrap:active { cursor: grabbing; }
+  .graph-svg-wrap svg { width: 100%; height: 100%; display: block; }
+
+  /* tooltip */
+  .graph-tooltip {
+    position: absolute; pointer-events: none; opacity: 0;
+    background: rgba(31,39,34,0.92); color: #f3efe6;
+    padding: 10px 14px; border-radius: 10px;
+    font-size: 12px; line-height: 1.5; max-width: 280px;
+    transition: opacity 0.15s; z-index: 10;
+  }
+  .graph-tooltip.visible { opacity: 1; }
+  .graph-tooltip .tt-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .graph-tooltip .tt-meta { color: rgba(243,239,230,0.7); font-size: 11px; }
+
+  /* detail panel */
+  .detail-panel {
+    width: 320px; background: var(--surface);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 20px; margin-left: 16px; overflow-y: auto;
+    display: none; flex-shrink: 0;
+  }
+  .detail-panel.open { display: block; }
+  .detail-panel h3 {
+    font-size: 16px; margin-bottom: 4px;
+  }
+  .detail-panel .dp-type {
+    font-size: 11px; color: var(--muted); margin-bottom: 12px;
+  }
+  .detail-panel .dp-section {
+    margin-top: 14px;
+  }
+  .detail-panel .dp-section h4 {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--muted); margin-bottom: 6px;
+  }
+  .detail-panel .dp-chip {
+    display: inline-block; font-size: 11px;
+    padding: 3px 8px; border-radius: 6px; margin: 2px 4px 2px 0;
+  }
+  .dp-chip.evidence { background: #dfe9df; color: var(--green); }
+  .dp-chip.entity { background: #f6dfb9; color: var(--amber); }
+  .detail-panel .dp-close {
+    float: right; background: none; border: none;
+    font-size: 18px; cursor: pointer; color: var(--muted);
+    line-height: 1;
+  }
+
+  /* legend */
+  .legend-row {
+    display: flex; gap: 14px; padding: 10px 16px;
+    border-top: 1px solid var(--line); flex-wrap: wrap;
+    font-size: 11px; color: var(--muted);
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .legend-swatch.vs { background: var(--green); border-radius: 3px; }
+  .legend-swatch.wi { background: var(--melon); border-radius: 50%; }
+  .legend-swatch.enj { background: var(--amber); transform: rotate(45deg); }
+  .legend-swatch.cap { background: var(--danger); clip-path: polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); }
+  .legend-line { width: 18px; height: 0; border-top: 2px solid; flex-shrink: 0; }
+  .legend-line.contains { border-color: var(--green); }
+  .legend-line.operates { border-color: var(--amber); border-style: dashed; }
+  .legend-line.requires { border-color: var(--danger); border-style: dotted; }
+
+  /* ── tab bar ── */
+  .graph-tabbar {
+    display: flex; gap: 2px;
+    padding: 8px 16px 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .tab-btn {
+    font-size: 12px; font-family: inherit; font-weight: 600;
+    padding: 8px 18px;
+    border: none; background: transparent;
+    color: var(--muted); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active {
+    color: var(--green);
+    border-bottom-color: var(--green);
+  }
+
+  /* ── view panes ── */
+  .view-pane {
+    display: none; flex-direction: column; flex: 1;
+    min-height: 0;
+  }
+  .view-pane.active { display: flex; }
+
+  /* ── swimlane view ── */
+  .swimlane-wrap {
+    flex: 1; position: relative;
+    overflow: auto;
+    background: var(--surface);
+  }
+  .swimlane-wrap svg { display: block; }
+
+  /* ── CRUD matrix view ── */
+  .matrix-wrap {
+    flex: 1; position: relative;
+    overflow: auto;
+    background: var(--surface);
+    padding: 16px;
+  }
+  .matrix-wrap svg { display: block; }
+</style>
+</head>
+<body>
+
+<div class="poc-header">
+  <span class="poc-badge">POC</span>
+  <h1>D3 力导向图 — 模块一 · 建模分析</h1>
+</div>
+
+<div class="main-wrap">
+  <!-- graph -->
+  <div class="graph-card" id="graphCard">
+    <!-- tab bar -->
+    <div class="graph-tabbar">
+      <button class="tab-btn active" data-view="1">关系图</button>
+      <button class="tab-btn" data-view="2">流程图</button>
+      <button class="tab-btn" data-view="3">CRUD 矩阵</button>
+    </div>
+
+    <!-- View 1: 力导向图 -->
+    <div class="view-pane active" data-view="1">
+      <div class="graph-toolbar">
+        <span style="font-size:11px;color:var(--muted);margin-right:4px;">筛选:</span>
+        <div class="filter-group">
+          <button class="filter-btn vs active" data-type="VS">价值流</button>
+          <button class="filter-btn wi active" data-type="WI">工作事项</button>
+          <button class="filter-btn enj active" data-type="ENJ">业务实体</button>
+          <button class="filter-btn cap active" data-type="CAP">能力</button>
+        </div>
+        <button class="filter-btn show-all" id="btnFit">📐 一屏看清</button>
+      </div>
+      <div class="graph-svg-wrap" id="svgWrap">
+        <div class="graph-tooltip" id="tooltip"></div>
+      </div>
+      <div class="legend-row" id="legend1">
+        <span style="font-weight:600;">图例</span>
+        <span class="legend-item"><span class="legend-swatch vs"></span>价值流</span>
+        <span class="legend-item"><span class="legend-swatch wi"></span>工作事项</span>
+        <span class="legend-item"><span class="legend-swatch enj"></span>业务实体</span>
+        <span class="legend-item"><span class="legend-swatch cap"></span>能力</span>
+        <span class="legend-item"><span class="legend-line contains"></span>包含</span>
+        <span class="legend-item"><span class="legend-line operates"></span>CRUD操作</span>
+        <span class="legend-item"><span class="legend-line requires"></span>需要能力</span>
+      </div>
+    </div>
+
+    <!-- View 2: 流程图 -->
+    <div class="view-pane" data-view="2" hidden>
+      <div class="graph-toolbar">
+        <span style="font-size:11px;color:var(--muted);">流程图 — 价值流内工作事项顺序</span>
+      </div>
+      <div class="swimlane-wrap" id="swimlaneWrap"></div>
+      <div class="legend-row" id="legend2" hidden>
+        <span style="font-weight:600;">图例</span>
+        <span class="legend-item"><span class="legend-line contains"></span>价值流边界</span>
+        <span class="legend-item"><span class="legend-swatch wi"></span>工作事项</span>
+        <span class="legend-item"><span class="legend-line contains"></span>流程顺序</span>
+      </div>
+    </div>
+
+    <!-- View 3: CRUD 矩阵 -->
+    <div class="view-pane" data-view="3" hidden>
+      <div class="graph-toolbar">
+        <span style="font-size:11px;color:var(--muted);">CRUD 矩阵 — 工作事项 × 业务实体 / 能力</span>
+      </div>
+      <div class="matrix-wrap" id="matrixWrap"></div>
+      <div class="legend-row" id="legend3" hidden>
+        <span style="font-weight:600;">CRUD</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#2f8d5b;"></span>C 创建</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#8bb8a0;"></span>R 读取</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#d69035;"></span>U 更新</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#a0472d;"></span>D 删除</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#2f8d5b;border-radius:2px;"></span>✓ 需要该能力</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- detail panel -->
+  <div class="detail-panel" id="detailPanel">
+    <button class="dp-close" id="dpClose">&times;</button>
+    <div id="dpContent"></div>
+  </div>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+// ── test data ──────────────────────────────────────────────
+const RAW = {
+  "value_streams": [
+    {"id":"VS1","value_stream_name":"虚拟机器人产品从设计到迭代优化","purpose":"将虚拟机器人产品概念转化为可交付、可体验、可演进的AI交互产品，支撑用户持续使用与价值提升","work_item_ids":["WI1","WI2","WI3","WI4"],"source_evidence":["负责虚拟机器人（有人物形象）产品基础模块设计、美术效果、开发进度跟进、产品验收测试；","负责内测用户的组建及产品体验反馈跟进、汇总；","负责用户反馈及产品迭代功能设计；","负责用户行为数据设计实现及分析。"],"evidence_type":"explicit","confidence":1.0}
+  ],
+  "work_items": [
+    {"id":"WI1","work_item_name":"设计虚拟机器人基础模块与美术效果","purpose":"定义虚拟机器人核心交互能力、视觉表现与基础功能结构，确保产品具备可用性与角色一致性","source_evidence":["负责虚拟机器人（有人物形象）产品基础模块设计、美术效果、开发进度跟进、产品验收测试；"],"evidence_type":"explicit","entity_operations":[{"entity_id":"ENJ1","operation":"create","operation_description":"创建虚拟机器人基础模块"},{"entity_id":"ENJ2","operation":"create","operation_description":"创建虚拟机器人美术效果规范"}],"capability_ids":["CAP1","CAP2"],"confidence":1.0},
+    {"id":"WI2","work_item_name":"组建内测用户并跟进产品体验反馈","purpose":"获取真实用户对虚拟机器人交互体验的定性反馈，识别关键体验问题与改进机会","source_evidence":["负责内测用户的组建及产品体验反馈跟进、汇总；"],"evidence_type":"explicit","entity_operations":[{"entity_id":"ENJ3","operation":"create","operation_description":"创建内测用户池"},{"entity_id":"ENJ4","operation":"read","operation_description":"读取产品体验反馈"}],"capability_ids":["CAP3","CAP4"],"confidence":1.0},
+    {"id":"WI3","work_item_name":"设计产品迭代功能","purpose":"基于用户反馈与业务目标，定义虚拟机器人下一版本的功能需求与交互逻辑","source_evidence":["负责用户反馈及产品迭代功能设计；"],"evidence_type":"explicit","entity_operations":[{"entity_id":"ENJ4","operation":"read","operation_description":"读取用户反馈"},{"entity_id":"ENJ5","operation":"create","operation_description":"创建产品迭代功能需求"}],"capability_ids":["CAP4","CAP5"],"confidence":1.0},
+    {"id":"WI4","work_item_name":"设计并分析用户行为数据","purpose":"构建可衡量的用户交互指标体系，通过数据分析验证产品假设、发现行为模式、驱动功能优化","source_evidence":["负责用户行为数据设计实现及分析。"],"evidence_type":"explicit","entity_operations":[{"entity_id":"ENJ6","operation":"create","operation_description":"创建用户行为数据指标体系"},{"entity_id":"ENJ7","operation":"read","operation_description":"读取用户行为数据"}],"capability_ids":["CAP6","CAP7"],"confidence":1.0}
+  ],
+  "bussiness_entitys": [
+    {"id":"ENJ1","entity_name":"虚拟机器人基础模块","entity_domain":"product","entity_type":"产品功能","parent_entity_id":null,"source_evidence":["负责虚拟机器人（有人物形象）产品基础模块设计、美术效果、开发进度跟进、产品验收测试；"],"evidence_type":"explicit","confidence":1.0},
+    {"id":"ENJ2","entity_name":"虚拟机器人美术效果规范","entity_domain":"product","entity_type":"产品策略","parent_entity_id":null,"source_evidence":["负责虚拟机器人（有人物形象）产品基础模块设计、美术效果、开发进度跟进、产品验收测试；"],"evidence_type":"explicit","confidence":1.0},
+    {"id":"ENJ3","entity_name":"内测用户池","entity_domain":"business","entity_type":"业务场景","parent_entity_id":null,"source_evidence":["负责内测用户的组建及产品体验反馈跟进、汇总；"],"evidence_type":"explicit","confidence":1.0},
+    {"id":"ENJ4","entity_name":"产品体验反馈","entity_domain":"data_knowledge","entity_type":"用户反馈数据","parent_entity_id":null,"source_evidence":["负责内测用户的组建及产品体验反馈跟进、汇总；","负责用户反馈及产品迭代功能设计；"],"evidence_type":"explicit","confidence":1.0},
+    {"id":"ENJ5","entity_name":"产品迭代功能需求","entity_domain":"product","entity_type":"产品需求","parent_entity_id":null,"source_evidence":["负责用户反馈及产品迭代功能设计；"],"evidence_type":"explicit","confidence":1.0},
+    {"id":"ENJ6","entity_name":"用户行为数据指标体系","entity_domain":"data_knowledge","entity_type":"数据标注规则","parent_entity_id":null,"source_evidence":["负责用户行为数据设计实现及分析。"],"evidence_type":"explicit","confidence":1.0},
+    {"id":"ENJ7","entity_name":"用户行为数据","entity_domain":"data_knowledge","entity_type":"原始数据","parent_entity_id":null,"source_evidence":["负责用户行为数据设计实现及分析。"],"evidence_type":"explicit","confidence":1.0}
+  ],
+  "capabilities": [
+    {"id":"CAP1","capability_name":"虚拟机器人产品功能设计能力","definition":"稳定完成虚拟机器人基础模块定义、交互流程设计与功能边界划分，管理虚拟机器人基础模块等产品功能类实体","primary_entity_ids":["ENJ1"],"supported_work_item_ids":["WI1"],"source_evidence":["负责虚拟机器人（有人物形象）产品基础模块设计、美术效果、开发进度跟进、产品验收测试；"],"evidence_type":"explicit","confidence":1.0},
+    {"id":"CAP2","capability_name":"虚拟机器人视觉表达设计能力","definition":"稳定完成虚拟机器人人物形象、界面风格、动效节奏等美术效果规范制定，管理虚拟机器人美术效果规范等产品策略类实体","primary_entity_ids":["ENJ2"],"supported_work_item_ids":["WI1"],"source_evidence":["负责虚拟机器人（有人物形象）产品基础模块设计、美术效果、开发进度跟进、产品验收测试；"],"evidence_type":"explicit","confidence":1.0},
+    {"id":"CAP3","capability_name":"内测用户运营能力","definition":"稳定完成内测用户招募、分层管理、体验任务分发与反馈归集，管理内测用户池等业务场景类实体","primary_entity_ids":["ENJ3"],"supported_work_item_ids":["WI2"],"source_evidence":["负责内测用户的组建及产品体验反馈跟进、汇总；"],"evidence_type":"explicit","confidence":1.0},
+    {"id":"CAP4","capability_name":"用户反馈分析能力","definition":"稳定完成用户反馈的分类、归因、优先级排序与问题抽象，管理产品体验反馈等用户反馈数据类实体","primary_entity_ids":["ENJ4"],"supported_work_item_ids":["WI2","WI3"],"source_evidence":["负责内测用户的组建及产品体验反馈跟进、汇总；","负责用户反馈及产品迭代功能设计；"],"evidence_type":"explicit","confidence":1.0},
+    {"id":"CAP5","capability_name":"产品迭代需求设计能力","definition":"稳定完成基于反馈与数据的产品功能演进规划、需求文档撰写与交互方案设计，管理产品迭代功能需求等产品需求类实体","primary_entity_ids":["ENJ5"],"supported_work_item_ids":["WI3"],"source_evidence":["负责用户反馈及产品迭代功能设计；"],"evidence_type":"explicit","confidence":1.0},
+    {"id":"CAP6","capability_name":"用户行为数据体系设计能力","definition":"稳定完成用户行为埋点设计、指标口径定义、数据采集方案制定，管理用户行为数据指标体系等数据标注规则类实体","primary_entity_ids":["ENJ6"],"supported_work_item_ids":["WI4"],"source_evidence":["负责用户行为数据设计实现及分析。"],"evidence_type":"explicit","confidence":1.0},
+    {"id":"CAP7","capability_name":"用户行为数据分析能力","definition":"稳定完成用户路径分析、漏斗转化分析、留存归因分析等，管理用户行为数据等原始数据类实体","primary_entity_ids":["ENJ7"],"supported_work_item_ids":["WI4"],"source_evidence":["负责用户行为数据设计实现及分析。"],"evidence_type":"explicit","confidence":1.0}
+  ]
+};
+
+// ── build graph ────────────────────────────────────────────
+const COLORS = {
+  VS: '#1f5b46',
+  WI: '#2f8d5b',
+  ENJ: '#d69035',
+  CAP: '#a0472d'
+};
+
+const DOMAIN_COLORS = {
+  business: '#a0472d',
+  product: '#2f8d5b',
+  data_knowledge: '#d69035',
+  ai_capability: '#1f5b46',
+  software_system: '#667067',
+  runtime_delivery: '#8b6f4e',
+  governance_constraint: '#d9534f'
+};
+
+// index lookup
+const entityMap = {};
+RAW.bussiness_entitys.forEach(e => { entityMap[e.id] = e; });
+const capMap = {};
+RAW.capabilities.forEach(c => { capMap[c.id] = c; });
+
+const nodes = [];
+const links = [];
+
+// VS nodes
+RAW.value_streams.forEach(vs => {
+  nodes.push({
+    id: vs.id, type: 'VS', name: vs.value_stream_name,
+    purpose: vs.purpose, evidence: vs.source_evidence,
+    evidenceType: vs.evidence_type, confidence: vs.confidence,
+    raw: vs
+  });
+  // VS contains WI
+  vs.work_item_ids.forEach(wid => {
+    links.push({ source: vs.id, target: wid, type: 'contains' });
+  });
+});
+
+// WI nodes
+RAW.work_items.forEach(wi => {
+  nodes.push({
+    id: wi.id, type: 'WI', name: wi.work_item_name,
+    purpose: wi.purpose, evidence: wi.source_evidence,
+    evidenceType: wi.evidence_type, confidence: wi.confidence,
+    raw: wi
+  });
+  // WI operates on entity
+  wi.entity_operations.forEach(op => {
+    links.push({
+      source: wi.id, target: op.entity_id,
+      type: 'operates_on', operation: op.operation,
+      opDesc: op.operation_description
+    });
+  });
+  // WI requires capability
+  wi.capability_ids.forEach(cid => {
+    links.push({ source: wi.id, target: cid, type: 'requires' });
+  });
+});
+
+// entity nodes
+RAW.bussiness_entitys.forEach(enj => {
+  nodes.push({
+    id: enj.id, type: 'ENJ', name: enj.entity_name,
+    domain: enj.entity_domain, entityType: enj.entity_type,
+    purpose: `${enj.entity_domain} / ${enj.entity_type}`,
+    evidence: enj.source_evidence,
+    evidenceType: enj.evidence_type, confidence: enj.confidence,
+    raw: enj
+  });
+});
+
+// capability nodes
+RAW.capabilities.forEach(cap => {
+  nodes.push({
+    id: cap.id, type: 'CAP', name: cap.capability_name,
+    purpose: cap.definition,
+    evidence: cap.source_evidence,
+    evidenceType: cap.evidence_type, confidence: cap.confidence,
+    primaryEntityIds: cap.primary_entity_ids,
+    raw: cap
+  });
+  // CAP → primary entity
+  cap.primary_entity_ids.forEach(eid => {
+    links.push({ source: cap.id, target: eid, type: 'manages' });
+  });
+});
+
+// ── D3 render ──────────────────────────────────────────────
+// ── renderView1: 力导向图 ─────────────────────────────────
+function renderView1() {
+  const svgWrap = document.getElementById('svgWrap');
+  const tooltip = document.getElementById('tooltip');
+  const detailPanel = document.getElementById('detailPanel');
+  const dpContent = document.getElementById('dpContent');
+
+  const width = svgWrap.clientWidth;
+  const height = svgWrap.clientHeight;
+
+  const svg = d3.select('#svgWrap')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height);
+
+  const g = svg.append('g');
+
+  // zoom
+  const zoom = d3.zoom()
+    .scaleExtent([0.2, 3])
+    .on('zoom', (event) => { g.attr('transform', event.transform); });
+  svg.call(zoom);
+
+  // store zoom ref for tab switching
+  svg._zoom = zoom;
+
+  // arrow marker
+  g.append('defs').selectAll('marker')
+    .data(['contains','operates_on','requires','manages'])
+    .join('marker')
+    .attr('id', d => `arrow-${d}`)
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 20)
+    .attr('refY', 0)
+    .attr('markerWidth', 6)
+    .attr('markerHeight', 6)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('d', 'M0,-4L8,0L0,4')
+    .attr('fill', d => {
+      if (d === 'contains') return COLORS.VS;
+      if (d === 'requires') return COLORS.CAP;
+      return COLORS.ENJ;
+    });
+
+  // force simulation
+  const sim = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id).distance(d => {
+      if (d.type === 'contains') return 100;
+      if (d.type === 'operates_on') return 120;
+      if (d.type === 'requires') return 100;
+      return 140;
+    }))
+    .force('charge', d3.forceManyBody().strength(-400))
+    .force('center', d3.forceCenter(width/2, height/2))
+    .force('collision', d3.forceCollide().radius(30));
+
+  // node radius
+  function nodeRadius(d) {
+    return 12 + d.confidence * 16;
+  }
+
+  // node color
+  function nodeColor(d) {
+    if (d.type === 'ENJ') return DOMAIN_COLORS[d.domain] || COLORS.ENJ;
+    return COLORS[d.type] || '#999';
+  }
+
+  // shape renderers
+  function drawNode(sel) {
+    sel.each(function(d) {
+      const el = d3.select(this);
+      const r = nodeRadius(d);
+      if (d.type === 'VS') {
+        // rounded rect
+        el.append('rect')
+          .attr('x', -r*1.6).attr('y', -r*0.7)
+          .attr('width', r*3.2).attr('height', r*1.4)
+          .attr('rx', 8).attr('ry', 8)
+          .attr('fill', nodeColor(d))
+          .attr('stroke', d.evidenceType === 'inferred' ? '#999' : 'none')
+          .attr('stroke-dasharray', d.evidenceType === 'inferred' ? '4 2' : 'none')
+          .attr('stroke-width', 1.5);
+      } else if (d.type === 'WI') {
+        // circle
+        el.append('circle')
+          .attr('r', r)
+          .attr('fill', nodeColor(d))
+          .attr('stroke', d.evidenceType === 'inferred' ? '#999' : 'none')
+          .attr('stroke-dasharray', d.evidenceType === 'inferred' ? '4 2' : 'none')
+          .attr('stroke-width', 1.5);
+      } else if (d.type === 'ENJ') {
+        // diamond
+        const s = r * 1.2;
+        el.append('polygon')
+          .attr('points', `0,${-s} ${s},0 0,${s} ${-s},0`)
+          .attr('fill', nodeColor(d))
+          .attr('stroke', d.evidenceType === 'inferred' ? '#999' : 'none')
+          .attr('stroke-dasharray', d.evidenceType === 'inferred' ? '4 2' : 'none')
+          .attr('stroke-width', 1.5);
+      } else if (d.type === 'CAP') {
+        // hexagon
+        const pts = [];
+        for (let i = 0; i < 6; i++) {
+          const a = Math.PI/6 + i * Math.PI/3;
+          pts.push([r * 1.1 * Math.cos(a), r * 1.1 * Math.sin(a)]);
+        }
+        el.append('polygon')
+          .attr('points', pts.map(p => p.join(',')).join(' '))
+          .attr('fill', nodeColor(d))
+          .attr('stroke', d.evidenceType === 'inferred' ? '#999' : 'none')
+          .attr('stroke-dasharray', d.evidenceType === 'inferred' ? '4 2' : 'none')
+          .attr('stroke-width', 1.5);
+      }
+    });
+  }
+
+  // label
+  function labelText(d) {
+    const n = d.name || '';
+    return n.length > 8 ? n.slice(0,8) + '…' : n;
+  }
+
+  // links
+  const linkG = g.append('g').attr('class', 'links');
+  const link = linkG.selectAll('line')
+    .data(links)
+    .join('line')
+    .attr('stroke', d => {
+      if (d.type === 'contains') return COLORS.VS;
+      if (d.type === 'requires' || d.type === 'manages') return COLORS.CAP;
+      return COLORS.ENJ;
+    })
+    .attr('stroke-width', d => d.type === 'contains' ? 2 : 1.2)
+    .attr('stroke-dasharray', d => {
+      if (d.type === 'operates_on') return '6 3';
+      if (d.type === 'requires') return '3 3';
+      return 'none';
+    })
+    .attr('stroke-opacity', 0.5)
+    .attr('marker-end', d => `url(#arrow-${d.type})`);
+
+  // nodes
+  const nodeG = g.append('g').attr('class', 'nodes');
+  const node = nodeG.selectAll('g')
+    .data(nodes)
+    .join('g')
+    .attr('class', d => `node node-${d.type}`)
+    .call(drawNode)
+    .call(d3.drag()
+      .on('start', (e,d) => { if(!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag', (e,d) => { d.fx = e.x; d.fy = e.y; })
+      .on('end', (e,d) => { if(!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
+    );
+
+  // labels
+  const labelG = g.append('g').attr('class', 'labels');
+  const label = labelG.selectAll('text')
+    .data(nodes)
+    .join('text')
+    .text(d => labelText(d))
+    .attr('font-size', 10)
+    .attr('text-anchor', 'middle')
+    .attr('dy', d => nodeRadius(d) + 14)
+    .attr('fill', 'var(--ink)')
+    .style('pointer-events', 'none')
+    .style('user-select', 'none');
+
+  // simulation tick
+  sim.on('tick', () => {
+    link
+      .attr('x1', d => d.source.x)
+      .attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x)
+      .attr('y2', d => d.target.y);
+    node.attr('transform', d => `translate(${d.x},${d.y})`);
+    label.attr('x', d => d.x).attr('y', d => d.y);
+  });
+
+  // ── interaction ──
+
+  // tooltip
+  node.on('mouseenter', function(event, d) {
+      const r = nodeRadius(d);
+      const deps = links.filter(l => l.source.id === d.id || l.target.id === d.id);
+      // highlight
+      node.style('opacity', n => n.id === d.id || deps.some(l => l.source.id === n.id || l.target.id === n.id) ? 1 : 0.15);
+      link.style('opacity', l => l.source.id === d.id || l.target.id === d.id ? 0.9 : 0.08);
+
+      tooltip.innerHTML = `
+        <div class="tt-name">${d.name}</div>
+        <div class="tt-meta">${d.type} · confidence ${d.confidence} · ${d.evidenceType}</div>
+        <div style="margin-top:4px;font-size:11px;">${d.purpose || ''}</div>
+      `;
+      tooltip.classList.add('visible');
+    })
+    .on('mousemove', function(event) {
+      const [mx, my] = d3.pointer(event, svgWrap);
+      tooltip.style.left = (mx + 16) + 'px';
+      tooltip.style.top = (my - 10) + 'px';
+    })
+    .on('mouseleave', function() {
+      node.style('opacity', 1);
+      link.style('opacity', 0.5);
+      tooltip.classList.remove('visible');
+    });
+
+  // click → detail panel
+  node.on('click', function(event, d) {
+    event.stopPropagation();
+    showDetail(d);
+  });
+
+  svg.on('click', function() {
+    detailPanel.classList.remove('open');
+  });
+
+  // ── filters ──
+  const filterState = { VS: true, WI: true, ENJ: true, CAP: true };
+
+  function applyFilters() {
+    node.style('display', d => filterState[d.type] ? null : 'none');
+    label.style('display', d => filterState[d.type] ? null : 'none');
+    link.style('display', l => {
+      return filterState[l.source.type] && filterState[l.target.type] ? null : 'none';
+    });
+  }
+
+  document.querySelectorAll('.filter-btn[data-type]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const t = this.dataset.type;
+      filterState[t] = !filterState[t];
+      this.classList.toggle('active', filterState[t]);
+      applyFilters();
+    });
+  });
+
+  // fit view
+  document.getElementById('btnFit').addEventListener('click', () => {
+    const xs = nodes.map(d => d.x), ys = nodes.map(d => d.y);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs);
+    const y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const pad = 60;
+    const scale = Math.min(width / (x1 - x0 + pad*2), height / (y1 - y0 + pad*2), 1.5);
+    const tx = width/2 - (x0 + x1)/2 * scale;
+    const ty = height/2 - (y0 + y1)/2 * scale;
+    svg.transition().duration(600).call(
+      zoom.transform,
+      d3.zoomIdentity.translate(tx, ty).scale(scale)
+    );
+  });
+
+  // initial fit after sim stabilizes
+  sim.on('end', () => {
+    document.getElementById('btnFit').click();
+  });
+}
+
+// ── shared showDetail ────────────────────────────────────────
+function showDetail(d) {
+  const detailPanel = document.getElementById('detailPanel');
+  const dpContent = document.getElementById('dpContent');
+  const typeLabel = { VS:'价值流', WI:'工作事项', ENJ:'业务实体', CAP:'能力' };
+  const domainLabel = d.domain ? ` · ${d.domain}` : '';
+  const relatedLinks = links.filter(l => {
+    const sid = l.source?.id || l.source;
+    const tid = l.target?.id || l.target;
+    return sid === d.id || tid === d.id;
+  });
+  const relatedNodes = relatedLinks.map(l => {
+    const sid = l.source?.id || l.source;
+    const tid = l.target?.id || l.target;
+    return sid === d.id ? tid : sid;
+  });
+  const relatedNames = [...new Set(relatedNodes)].map(id => {
+    const n = nodes.find(nn => nn.id === id);
+    return n ? `<span class="dp-chip entity">${n.name}</span>` : '';
+  }).join('');
+
+  let evidenceHtml = '';
+  if (d.evidence && d.evidence.length) {
+    evidenceHtml = d.evidence.map(e => `<span class="dp-chip evidence">${e.slice(0,40)}…</span>`).join('<br>');
+  }
+
+  let domainChip = '';
+  if (d.type === 'ENJ' && d.domain) {
+    const dc = DOMAIN_COLORS[d.domain] || '#999';
+    domainChip = `<span class="dp-chip" style="background:${dc};color:#fff;">${d.domain}</span>`;
+  }
+
+  const conf = d.confidence != null ? d.confidence : 1.0;
+  const evType = d.evidenceType || 'explicit';
+
+  dpContent.innerHTML = `
+    <h3>${d.name}</h3>
+    <div class="dp-type">${typeLabel[d.type] || d.type || '关系'}${domainLabel} ${domainChip}</div>
+    <div style="font-size:13px;line-height:1.6;color:var(--ink);">${d.purpose || ''}</div>
+    <div class="dp-section"><h4>关联节点</h4>${relatedNames || '<span style="color:var(--muted);font-size:12px;">无</span>'}</div>
+    <div class="dp-section"><h4>来源证据</h4>${evidenceHtml || '<span style="color:var(--muted);font-size:12px;">无</span>'}</div>
+    <div class="dp-section"><h4>置信度</h4>
+      <div style="height:4px;background:var(--line);border-radius:2px;margin-top:4px;">
+        <div style="height:100%;width:${conf*100}%;background:var(--green);border-radius:2px;"></div>
+      </div>
+      <span style="font-size:11px;color:var(--muted);">${conf} · ${evType}</span>
+    </div>
+  `;
+  detailPanel.classList.add('open');
+}
+
+document.getElementById('dpClose').addEventListener('click', () => {
+  document.getElementById('detailPanel').classList.remove('open');
+});
+
+// ── renderView2: 流程图 ──────────────────────────────────────
+function renderView2() {
+  const wrap = document.getElementById('swimlaneWrap');
+  const tooltip = document.getElementById('tooltip');
+  wrap.innerHTML = '';
+
+  const viewportW = Math.max(wrap.clientWidth, 800);
+  const paddingX = 44;
+  const paddingY = 32;
+  const containerPadX = 32;
+  const titleH = 56;
+  const cardW = 238;
+  const cardH = 78;
+  const cardGap = 54;
+  const containerH = 188;
+  const rowGap = 28;
+
+  // Get all value streams and their work items
+  const valueStreams = RAW.value_streams;
+
+  const maxContentW = d3.max(valueStreams, vs => {
+    const wiCount = Math.max(vs.work_item_ids.length, 1);
+    return containerPadX * 2 + wiCount * cardW + Math.max(wiCount - 1, 0) * cardGap;
+  }) || 0;
+  const width = Math.max(viewportW, paddingX * 2 + maxContentW);
+  const totalH = paddingY * 2 + valueStreams.length * containerH + Math.max(valueStreams.length - 1, 0) * rowGap;
+
+  const svg = d3.select(wrap)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', Math.max(totalH, wrap.clientHeight || 400));
+
+  // Arrow marker
+  svg.append('defs').append('marker')
+    .attr('id', 'arrow-flow')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 10).attr('refY', 0)
+    .attr('markerWidth', 7).attr('markerHeight', 7)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('d', 'M0,-4L8,0L0,4')
+    .attr('fill', COLORS.VS);
+
+  function wrapText(text, maxChars, maxLines) {
+    const lines = [];
+    let rest = text || '';
+    while (rest.length > 0 && lines.length < maxLines) {
+      let line = rest.slice(0, maxChars);
+      rest = rest.slice(maxChars);
+      if (rest.length > 0 && lines.length === maxLines - 1) line = line.slice(0, Math.max(maxChars - 1, 1)) + '…';
+      lines.push(line);
+    }
+    return lines.length ? lines : [''];
+  }
+
+  valueStreams.forEach((vs, vsIdx) => {
+    const rowY = paddingY + vsIdx * (containerH + rowGap);
+    const wiIds = vs.work_item_ids;
+    const wiCount = wiIds.length;
+    const flowW = Math.max(wiCount, 1) * cardW + Math.max(wiCount - 1, 0) * cardGap;
+    const containerW = Math.max(viewportW - paddingX * 2, containerPadX * 2 + flowW);
+    const containerX = paddingX;
+    const cardY = rowY + titleH + 22;
+    const firstCardX = containerX + containerPadX;
+
+    const vsNode = { id: vs.id, type: 'VS', name: vs.value_stream_name, purpose: vs.purpose, evidence: vs.source_evidence, evidenceType: vs.evidence_type, confidence: vs.confidence };
+    const vsG = svg.append('g')
+      .attr('class', 'flow-vs-container')
+      .style('cursor', 'pointer');
+
+    vsG.append('rect')
+      .attr('x', containerX).attr('y', rowY)
+      .attr('width', containerW).attr('height', containerH)
+      .attr('rx', 16).attr('ry', 16)
+      .attr('fill', 'rgba(47,141,91,0.035)')
+      .attr('stroke', COLORS.VS)
+      .attr('stroke-dasharray', '8 5')
+      .attr('stroke-width', 1.5);
+
+    vsG.append('text')
+      .attr('x', containerX + 24).attr('y', rowY + 28)
+      .attr('fill', COLORS.VS)
+      .attr('font-size', 15).attr('font-weight', 700)
+      .text(vs.value_stream_name.length > 34 ? vs.value_stream_name.slice(0, 33) + '…' : vs.value_stream_name);
+
+    vsG.append('text')
+      .attr('x', containerX + 24).attr('y', rowY + 49)
+      .attr('fill', 'var(--muted)')
+      .attr('font-size', 11)
+      .text(`${vs.id} · 端到端价值流`);
+
+    vsG.on('mouseenter', (event) => {
+      tooltip.innerHTML = `<div class="tt-name">${vsNode.name}</div><div class="tt-meta">VS · ${vsNode.evidenceType}</div><div style="margin-top:4px;font-size:11px;">${vsNode.purpose || ''}</div>`;
+      tooltip.classList.add('visible');
+    })
+    .on('mousemove', (event) => {
+      const [mx, my] = d3.pointer(event, wrap);
+      tooltip.style.left = (mx + 16) + 'px';
+      tooltip.style.top = (my - 10) + 'px';
+    })
+    .on('mouseleave', () => { tooltip.classList.remove('visible'); })
+    .on('click', (event) => { event.stopPropagation(); showDetail(vsNode); });
+
+    // WI cards
+    wiIds.forEach((wid, wiIdx) => {
+      const wi = RAW.work_items.find(w => w.id === wid);
+      if (!wi) return;
+      const cardX = firstCardX + wiIdx * (cardW + cardGap);
+
+      const wiG = svg.append('g')
+        .attr('class', 'flow-wi-card')
+        .style('cursor', 'pointer');
+
+      wiG.append('rect')
+        .attr('x', cardX).attr('y', cardY)
+        .attr('width', cardW).attr('height', cardH)
+        .attr('rx', 10).attr('ry', 10)
+        .attr('fill', 'rgba(47,141,91,0.12)')
+        .attr('stroke', wi.evidence_type === 'inferred' ? '#999' : 'none')
+        .attr('stroke-dasharray', wi.evidence_type === 'inferred' ? '4 2' : 'none')
+        .attr('stroke-width', 1.5);
+
+      wiG.append('text')
+        .attr('x', cardX + 16).attr('y', cardY + 24)
+        .attr('fill', COLORS.WI)
+        .attr('font-size', 11).attr('font-weight', 700)
+        .text(wi.id);
+
+      const labelLines = wrapText(wi.work_item_name, 15, 2);
+      const label = wiG.append('text')
+        .attr('x', cardX + 16).attr('y', cardY + 47)
+        .attr('fill', 'var(--ink)')
+        .attr('font-size', 13)
+        .attr('font-weight', 600)
+        .style('pointer-events', 'none').style('user-select', 'none');
+      labelLines.forEach((line, lineIdx) => {
+        label.append('tspan')
+          .attr('x', cardX + 16)
+          .attr('dy', lineIdx === 0 ? 0 : 18)
+          .text(line);
+      });
+
+      // WI tooltip + detail
+      const wiNode = { id: wi.id, type: 'WI', name: wi.work_item_name, purpose: wi.purpose, evidence: wi.source_evidence, evidenceType: wi.evidence_type, confidence: wi.confidence };
+      wiG.on('mouseenter', (event) => {
+        tooltip.innerHTML = `<div class="tt-name">${wiNode.name}</div><div class="tt-meta">WI · ${wiNode.evidenceType}</div><div style="margin-top:4px;font-size:11px;">${wiNode.purpose || ''}</div>`;
+        tooltip.classList.add('visible');
+      })
+      .on('mousemove', (event) => {
+        const [mx, my] = d3.pointer(event, wrap);
+        tooltip.style.left = (mx + 16) + 'px';
+        tooltip.style.top = (my - 10) + 'px';
+      })
+      .on('mouseleave', () => { tooltip.classList.remove('visible'); })
+      .on('click', (event) => { event.stopPropagation(); showDetail(wiNode); });
+    });
+
+    // Flow arrows: WI1 → WI2 → ...
+    for (let i = 0; i < wiCount - 1; i++) {
+      const fromX = firstCardX + i * (cardW + cardGap) + cardW;
+      const toX = fromX + cardGap;
+      svg.append('line')
+        .attr('x1', fromX + 8).attr('y1', cardY + cardH / 2)
+        .attr('x2', toX - 8).attr('y2', cardY + cardH / 2)
+        .attr('stroke', COLORS.VS).attr('stroke-width', 2)
+        .attr('marker-end', 'url(#arrow-flow)');
+    }
+  });
+
+  // click on empty area closes detail
+  svg.on('click', () => {
+    document.getElementById('detailPanel').classList.remove('open');
+  });
+}
+
+// ── renderView3: CRUD 矩阵 ───────────────────────────────────
+function renderView3() {
+  const wrap = document.getElementById('matrixWrap');
+  const tooltip = document.getElementById('tooltip');
+
+  const cellW = 80, cellH = 34;
+  const rowHeaderW = 150;
+  const colHeaderH = 90;
+  const gap = 12;
+
+  // Collect all WI (merged from all VS)
+  const allWiIds = [];
+  RAW.value_streams.forEach(vs => { vs.work_item_ids.forEach(wid => { if (!allWiIds.includes(wid)) allWiIds.push(wid); }); });
+  const wis = allWiIds.map(wid => RAW.work_items.find(w => w.id === wid)).filter(Boolean);
+
+  const entities = RAW.bussiness_entitys;
+  const capabilities = RAW.capabilities;
+
+  const colsE = entities.length;
+  const rowsW = wis.length;
+  const colsC = capabilities.length;
+
+  // Matrix dimensions
+  const gridW1 = colsE * cellW;
+  const gridW2 = colsC * cellW;
+  const maxGridW = Math.max(gridW1, gridW2);
+  const svgW = rowHeaderW + maxGridW + 40;
+  const titleH = 28;
+  const gridH1 = colHeaderH + rowsW * cellH;
+  const gridH2 = colHeaderH + rowsW * cellH;
+  const svgH = gridH1 + titleH + gridH2 + 40;
+
+  const svg = d3.select(wrap)
+    .append('svg')
+    .attr('width', svgW)
+    .attr('height', svgH);
+
+  // CRUD colors
+  const CRUD_COLORS = { create: '#2f8d5b', read: '#8bb8a0', update: '#d69035', delete: '#a0472d' };
+  const CRUD_SYMBOLS = { create: 'C', read: 'R', update: 'U', delete: 'D' };
+
+  function renderMatrix(startY, columns, colLabels, colDomains, getCellOp) {
+    const cols = columns.length;
+    const gridW = cols * cellW;
+
+    // Column headers
+    columns.forEach((col, ci) => {
+      const cx = rowHeaderW + ci * cellW + cellW / 2;
+      const cy = startY + colHeaderH - 16;
+
+      // Domain color stripe
+      if (colDomains && colDomains[ci]) {
+        svg.append('rect')
+          .attr('x', rowHeaderW + ci * cellW + 4)
+          .attr('y', startY)
+          .attr('width', cellW - 8)
+          .attr('height', 4)
+          .attr('rx', 2)
+          .attr('fill', DOMAIN_COLORS[colDomains[ci]] || '#999');
+      }
+
+      // Column name rotated -45°
+      const name = colLabels[ci];
+      const displayName = name.length > 8 ? name.slice(0, 8) + '…' : name;
+      svg.append('text')
+        .attr('x', cx)
+        .attr('y', startY + 28)
+        .attr('transform', `rotate(-45, ${cx}, ${startY + 28})`)
+        .attr('text-anchor', 'end')
+        .attr('fill', 'var(--ink)')
+        .attr('font-size', 10)
+        .attr('font-weight', 600)
+        .text(displayName);
+
+      // ID label
+      svg.append('text')
+        .attr('x', cx)
+        .attr('y', cy + 10)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'var(--muted)')
+        .attr('font-size', 9)
+        .text(col.id);
+    });
+
+    // Row headers + cells
+    wis.forEach((wi, ri) => {
+      const ry = startY + colHeaderH + ri * cellH;
+      const rcy = ry + cellH / 2;
+
+      // Row header background
+      svg.append('rect')
+        .attr('x', 4).attr('y', ry)
+        .attr('width', rowHeaderW - 8).attr('height', cellH)
+        .attr('fill', ri % 2 === 0 ? 'rgba(31,39,34,0.02)' : 'transparent');
+
+      // Row header text
+      const wiName = wi.work_item_name.length > 8 ? wi.work_item_name.slice(0, 8) + '…' : wi.work_item_name;
+      svg.append('text')
+        .attr('x', rowHeaderW - 10).attr('y', rcy)
+        .attr('text-anchor', 'end')
+        .attr('dominant-baseline', 'central')
+        .attr('fill', 'var(--ink)')
+        .attr('font-size', 11)
+        .attr('font-weight', 500)
+        .text(wiName);
+
+      // Cells
+      columns.forEach((col, ci) => {
+        const cx = rowHeaderW + ci * cellW;
+        const cellOp = getCellOp(wi, col);
+
+        // Cell background
+        const cellRect = svg.append('rect')
+          .attr('x', cx + 1).attr('y', ry + 1)
+          .attr('width', cellW - 2).attr('height', cellH - 2)
+          .attr('rx', 3)
+          .attr('fill', cellOp ? (CRUD_COLORS[cellOp.op] || '#eee') : 'rgba(31,39,34,0.04)')
+          .attr('stroke', 'var(--line)')
+          .attr('stroke-width', 0.5)
+          .style('cursor', cellOp ? 'pointer' : 'default');
+
+        // Cell text
+        if (cellOp) {
+          svg.append('text')
+            .attr('x', cx + cellW / 2).attr('y', rcy)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .attr('fill', '#fff')
+            .attr('font-size', 16)
+            .attr('font-weight', 700)
+            .style('pointer-events', 'none')
+            .text(CRUD_SYMBOLS[cellOp.op] || '?');
+
+          // Tooltip + click
+          cellRect.on('mouseenter', (event) => {
+            tooltip.innerHTML = `<div class="tt-name">${wi.work_item_name}</div><div class="tt-meta">${cellOp.op.toUpperCase()} → ${col.entity_name || col.capability_name}</div><div style="margin-top:4px;font-size:11px;">${cellOp.desc || ''}</div>`;
+            tooltip.classList.add('visible');
+          })
+          .on('mousemove', (event) => {
+            const [mx, my] = d3.pointer(event, wrap);
+            tooltip.style.left = (mx + 16) + 'px';
+            tooltip.style.top = (my - 10) + 'px';
+          })
+          .on('mouseleave', () => { tooltip.classList.remove('visible'); })
+          .on('click', (event) => {
+            event.stopPropagation();
+            const detailObj = {
+              id: `${wi.id}-${col.id}`,
+              type: cellOp.op.toUpperCase(),
+              name: `${wi.work_item_name} → ${col.entity_name || col.capability_name}`,
+              purpose: cellOp.desc || '',
+              evidence: wi.source_evidence || [],
+              evidenceType: wi.evidence_type || 'explicit',
+              confidence: wi.confidence || 1.0
+            };
+            showDetail(detailObj);
+          });
+        }
+      });
+    });
+
+    return startY + colHeaderH + rowsW * cellH;
+  }
+
+  // ── Matrix 1: WI × ENJ ──
+  svg.append('text')
+    .attr('x', rowHeaderW).attr('y', 24)
+    .attr('fill', 'var(--ink)')
+    .attr('font-size', 13).attr('font-weight', 700)
+    .text('工作事项 × 业务实体');
+
+  const enjLabels = entities.map(e => e.entity_name);
+  const enjDomains = entities.map(e => e.entity_domain);
+  const endY1 = renderMatrix(32, entities, enjLabels, enjDomains, (wi, enj) => {
+    const op = wi.entity_operations?.find(o => o.entity_id === enj.id);
+    return op ? { op: op.operation, desc: op.operation_description } : null;
+  });
+
+  // ── Matrix 2: WI × CAP ──
+  const mat2Y = endY1 + titleH;
+  svg.append('text')
+    .attr('x', rowHeaderW).attr('y', mat2Y - 8)
+    .attr('fill', 'var(--ink)')
+    .attr('font-size', 13).attr('font-weight', 700)
+    .text('工作事项 × 能力');
+
+  const capLabels = capabilities.map(c => c.capability_name);
+  renderMatrix(mat2Y, capabilities, capLabels, null, (wi, cap) => {
+    const has = wi.capability_ids?.includes(cap.id);
+    return has ? { op: 'create', desc: `需要 ${cap.capability_name}` } : null;
+  });
+
+  // click on empty area closes detail
+  svg.on('click', () => {
+    document.getElementById('detailPanel').classList.remove('open');
+  });
+}
+
+// ── switch view ──────────────────────────────────────────────
+const VIEW_RENDERED = { 1: false, 2: false, 3: false };
+
+function switchView(viewIndex) {
+  // update tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.view) === viewIndex);
+  });
+  // show/hide panes
+  document.querySelectorAll('.view-pane').forEach(pane => {
+    const isActive = parseInt(pane.dataset.view) === viewIndex;
+    pane.classList.toggle('active', isActive);
+    pane.hidden = !isActive;
+  });
+
+  // handle view 1 zoom: unbind on leave, rebind on enter
+  const svgWrap = document.getElementById('svgWrap');
+  const svg = d3.select('#svgWrap svg');
+  if (!svg.empty()) {
+    if (viewIndex !== 1) {
+      svg.on('.zoom', null);
+    } else {
+      if (svg._zoom) svg.call(svg._zoom);
+    }
+  }
+
+  // show/hide legends
+  document.getElementById('legend1').hidden = (viewIndex !== 1);
+  document.getElementById('legend2').hidden = (viewIndex !== 2);
+  document.getElementById('legend3').hidden = (viewIndex !== 3);
+
+  // lazy render
+  if (!VIEW_RENDERED[viewIndex]) {
+    VIEW_RENDERED[viewIndex] = true;
+    if (viewIndex === 1) renderView1();
+    else if (viewIndex === 2) renderView2();
+    else if (viewIndex === 3) renderView3();
+  }
+
+  // restart force sim on view 1
+  if (viewIndex === 1 && typeof sim !== 'undefined') {
+    // sim is local to renderView1, not accessible here
+    // the force graph auto-fits on sim.end, so just rebinding zoom is enough
+  }
+}
+
+// Tab button listeners
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchView(parseInt(btn.dataset.view)));
+});
+
+// ── start ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  switchView(1);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+/*
+ * 目的：提供静态页共享的主题基建。
+ * 定义：统一字体变量、主题存储约定和跨页可复用的基础配色变量。
+ * 范围包括：
+ * - 字体变量、明暗主题变量和轻量基础交互状态。
+ * 范围不包括：
+ * - 不承载页面布局，不定义具体业务组件样式。
+ * 使用与修改规则：
+ * - 主题键为 `pigua-theme`，修改后要同步 `theme.js` 和各页面按钮文案。
+ */
+
+:root {
+  --bg: #f3efe6;
+  --surface: #fffaf1;
+  --surface-soft: rgba(255, 250, 241, 0.72);
+  --ink: #1f2722;
+  --muted: #667067;
+  --line: rgba(31, 39, 34, 0.14);
+  --line-strong: rgba(31, 39, 34, 0.28);
+  --green: #1f5b46;
+  --green-soft: #dfe9df;
+  --melon: #2f8d5b;
+  --melon-red: #d9534f;
+  --amber: #d69035;
+  --amber-soft: #f6dfb9;
+  --danger: #a0472d;
+  --radius-lg: 30px;
+  --radius-md: 20px;
+  --font-display: "LXGW WenKai Lite", "LXGW WenKai", "Songti SC", serif;
+  --font-body:
+    "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC",
+    sans-serif;
+  --font-mono:
+    "SFMono-Regular", "SF Mono", "Menlo", "Monaco", "Consolas", "Liberation Mono",
+    monospace;
+  --theme-ease: 180ms ease;
+  --theme-shadow: 0 28px 80px rgba(43, 50, 42, 0.14);
+  --shadow: var(--theme-shadow);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f1714;
+  --surface: #17211d;
+  --surface-soft: rgba(23, 33, 29, 0.78);
+  --ink: #eff6ee;
+  --muted: #aebcb1;
+  --line: rgba(239, 246, 238, 0.1);
+  --line-strong: rgba(239, 246, 238, 0.22);
+  --green: #92d8b1;
+  --green-soft: rgba(82, 121, 97, 0.3);
+  --melon: #72c994;
+  --melon-red: #e5766f;
+  --amber: #f0b75a;
+  --amber-soft: rgba(240, 183, 90, 0.16);
+  --danger: #ef8d73;
+  --theme-shadow: 0 36px 90px rgba(0, 0, 0, 0.36);
+}
+
+html {
+  min-height: 100%;
+  background-color: var(--bg);
+  overscroll-behavior-y: none;
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--bg);
+}
+
+:where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

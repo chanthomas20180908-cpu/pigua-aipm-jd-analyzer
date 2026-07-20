@@ -1,0 +1,158 @@
+<!--
+目的：design-preview.html 旧版前端页面。
+定义：static/design-preview.html 是历史静态预览页。
+范围包括：
+- 旧版页面结构和视觉验证入口。
+范围不包括：
+- 不作为当前根路径默认页面。
+使用与修改规则：
+- 当前入口优先维护 design-preview-02.html。
+-->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI PM 岗位判断工具 - 交互验证</title>
+    <link rel="stylesheet" href="design-preview.css" />
+  </head>
+  <body>
+    <main class="preview-shell state-input" id="preview-shell" data-state="input">
+      <section class="stage-card">
+        <div class="texture-orbit orbit-left"></div>
+        <div class="texture-orbit orbit-right"></div>
+
+        <header class="hero-head">
+          <div class="hero-meta">
+            <p class="eyebrow">Capybara Job Desk</p>
+            <span class="state-chip" id="state-chip">输入中</span>
+          </div>
+          <div class="hero-copy">
+            <h1>先把岗位和你放上桌，让卡皮巴拉替你慢慢看一遍。</h1>
+            <p class="hero-note" id="hero-note">
+              这里不是催投页。先贴 JD 和简历，再看它给你的那一句判断。
+            </p>
+          </div>
+        </header>
+
+        <section class="stage-scene" aria-live="polite">
+          <div class="capybara-stage" aria-label="卡皮巴拉在桌前帮你看材料">
+            <div class="desk-halo"></div>
+            <div class="capybara-scene" id="capybara-scene">
+              <div class="scene-sun"></div>
+              <div class="speech-bubble" id="speech-bubble">
+                <p id="bubble-text">先把材料给我，我先看，不急着下结论。</p>
+              </div>
+              <div class="paper-stack" aria-hidden="true">
+                <span class="paper paper-back"></span>
+                <span class="paper paper-mid"></span>
+                <span class="paper paper-top"></span>
+                <span class="stamp-mark"></span>
+              </div>
+              <div class="capybara" aria-hidden="true">
+                <span class="ear ear-left"></span>
+                <span class="ear ear-right"></span>
+                <span class="face">
+                  <i class="eye eye-left"></i>
+                  <i class="eye eye-right"></i>
+                  <i class="nose"></i>
+                  <i class="mouth"></i>
+                </span>
+                <span class="body"></span>
+                <span class="paw paw-left"></span>
+                <span class="paw paw-right"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="workflow-panel" id="workflow-panel">
+            <form class="input-panel" id="preview-form">
+              <div class="panel-head">
+                <span class="panel-index">01</span>
+                <div>
+                  <h2>把材料放上来</h2>
+                  <p>只保留两个输入。看交互，不跑真实分析链路。</p>
+                </div>
+              </div>
+
+              <label class="field">
+                <span>岗位 JD</span>
+                <textarea id="jd-text" rows="8" placeholder="粘贴岗位 JD 文本"></textarea>
+              </label>
+
+              <label class="field">
+                <span>简历文本</span>
+                <textarea id="resume-text" rows="8" placeholder="粘贴你的简历文本"></textarea>
+              </label>
+
+              <button class="primary-button" type="submit" id="analyze-button">
+                让卡皮巴拉看看
+              </button>
+              <p class="status-line" id="status-line">输入完成后，点击按钮进入审稿状态。</p>
+            </form>
+
+            <section class="loading-panel" id="loading-panel" hidden>
+              <div class="panel-head compact">
+                <span class="panel-index">02</span>
+                <div>
+                  <h2>它在审稿</h2>
+                  <p>先别催。它在划重点、翻纸、准备给你一句结论。</p>
+                </div>
+              </div>
+              <div class="loading-meter" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <p class="loading-copy" id="loading-copy">正在对照 JD 和简历，把不该忽略的地方圈出来。</p>
+            </section>
+
+            <section class="collapsed-panel" id="collapsed-panel" hidden>
+              <div class="collapsed-head">
+                <div>
+                  <span class="panel-index small">01</span>
+                  <strong>输入内容已收起</strong>
+                </div>
+                <div class="collapsed-actions">
+                  <button class="soft-button" type="button" id="toggle-input-preview">展开查看</button>
+                  <button class="soft-button" type="button" id="back-to-input">返回输入</button>
+                </div>
+              </div>
+              <div class="collapsed-body" id="collapsed-body" hidden>
+                <article>
+                  <h3>岗位 JD</h3>
+                  <p id="collapsed-jd"></p>
+                </article>
+                <article>
+                  <h3>简历文本</h3>
+                  <p id="collapsed-resume"></p>
+                </article>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="result-stage" id="result-stage" hidden>
+          <div class="result-card" id="result-card">
+            <div class="result-head">
+              <span class="result-index">03</span>
+              <div>
+                <p class="result-kicker">卡皮巴拉看完了</p>
+                <h2>一句判断</h2>
+              </div>
+            </div>
+            <div class="result-bubble">
+              <p id="result-text">这句判断会在这里出现。</p>
+            </div>
+            <div class="result-actions">
+              <button class="secondary-button" type="button" id="result-back-button">重新放材料</button>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="design-preview.js"></script>
+  </body>
+</html>

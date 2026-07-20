@@ -1,0 +1,91 @@
+<!--
+目的：index.html 旧版前端页面。
+定义：static/index.html 是历史静态预览页。
+范围包括：
+- 旧版页面结构和视觉验证入口。
+范围不包括：
+- 不作为当前根路径默认页面。
+使用与修改规则：
+- 当前入口优先维护 design-preview-02.html。
+-->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI PM 岗位判断工具</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Capybara AI PM Judge</p>
+          <h1>先别慌着投，我先帮你拆这个岗位。</h1>
+          <p class="subtitle">
+            输入 JD 和简历，拿到一份更像真实投递判断的结果。
+          </p>
+        </div>
+        <div class="capybara-card">
+          <div class="capybara-face" aria-hidden="true">
+            <span class="ear left"></span>
+            <span class="ear right"></span>
+            <span class="eye left"></span>
+            <span class="eye right"></span>
+            <span class="nose"></span>
+          </div>
+          <p class="capybara-line">先看岗位，再看你。别让标题骗你。</p>
+        </div>
+      </section>
+
+      <section class="tool-grid">
+        <form id="analyze-form" class="panel input-panel">
+          <div class="panel-head">
+            <h2>输入</h2>
+            <button type="button" id="load-demo" class="ghost-button">加载示例</button>
+          </div>
+
+          <label class="field">
+            <span>AI PM JD</span>
+            <textarea
+              id="jd-text"
+              name="jd_text"
+              rows="10"
+              placeholder="粘贴岗位 JD 文本"
+              required
+            ></textarea>
+          </label>
+
+          <label class="field">
+            <span>简历文本</span>
+            <textarea
+              id="resume-text"
+              name="resume_text"
+              rows="10"
+              placeholder="粘贴你的简历文本"
+              required
+            ></textarea>
+          </label>
+
+          <button type="submit" id="submit-button" class="primary-button">开始分析</button>
+          <p id="status-line" class="status-line">先贴内容，再开始判断。</p>
+        </form>
+
+        <section class="panel result-panel" id="result-panel">
+          <div class="panel-head">
+            <h2>结果</h2>
+            <div class="badge-group">
+              <span class="version-badge" id="workflow-version">—</span>
+              <span class="result-badge idle" id="recommendation-badge">等待分析</span>
+            </div>
+          </div>
+
+          <pre id="raw-output" class="raw-output">分析结果会显示在这里。</pre>
+        </section>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

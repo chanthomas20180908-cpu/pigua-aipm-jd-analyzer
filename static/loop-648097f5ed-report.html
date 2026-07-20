@@ -1,0 +1,181 @@
+<!--
+目的：可视化展示 run 648097f5ed 的 v4 离线迭代 loop 全过程。
+
+定义：一个独立静态 HTML 报告页，用 Mermaid 流程图呈现 loop 的启动、
+      三轮迭代、反思、停止与最终 best variant 结果。
+
+范围包括：
+- 迭代流程图、关键 metrics、成本与失败原因摘要。
+
+范围不包括：
+- 不包含动态数据加载、后端交互或自动刷新。
+
+使用与修改规则：
+- 本文件为一次性报告页，如需复用，可复制后替换 report 中的 run_id 和 metrics。
+- 修改 HTML 属性时必须使用英文半角引号。
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Run 648097f5ed Iteration Loop 流程图</title>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: true, theme: "default" });
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background-color: #f6f8fa;
+      color: #1f2328;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #656d76;
+      margin-bottom: 24px;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .metric-card {
+      background: #ffffff;
+      border: 1px solid #d0d7de;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 2px rgba(31, 35, 40, 0.04);
+    }
+    .metric-label {
+      font-size: 12px;
+      color: #656d76;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .metric-value {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .diagram {
+      background: #ffffff;
+      border: 1px solid #d0d7de;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 2px rgba(31, 35, 40, 0.04);
+    }
+    .note {
+      margin-top: 24px;
+      padding: 12px 16px;
+      background: #fff8c5;
+      border-left: 4px solid #d4a72c;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Run 648097f5ed Iteration Loop 流程图</h1>
+    <p class="subtitle">target = element_modeling · stopped_reason = max_iterations</p>
+
+    <div class="metrics">
+      <div class="metric-card">
+        <div class="metric-label">Baseline Score</div>
+        <div class="metric-value">0.933</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Best Score</div>
+        <div class="metric-value">0.950</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Improvement</div>
+        <div class="metric-value">+1.7%</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Cost</div>
+        <div class="metric-value">$0.785</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">LLM Calls</div>
+        <div class="metric-value">124</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Timeouts / Failures</div>
+        <div class="metric-value">0 / 0</div>
+      </div>
+    </div>
+
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TB
+    Start(["Loop 启动\ntarget = element_modeling\nmax_iterations = 3\nregression_floor = 0.75"])
+
+    subgraph Iteration0 ["Iteration 0 - Baseline"]
+        B0["variant: baseline\nscore: 0.933\ncost: $0.114\nexplicit_ratio_avg: 0.892"]
+        B0Case1["case_001 PASS 0.950"]
+        B0Case2["case_002 PASS 1.000"]
+        B0Case3["case_003 FAIL 0.800\nabstract_entity / coarse_entity_granularity"]
+        B0Case4["case_004 PASS 0.917"]
+        B0Case5["case_005 PASS 1.000"]
+    end
+
+    Reflect0["反思 Iteration 0\n提取确定性失败原因\n生成 prompt constraints"]
+
+    subgraph Iteration1 ["Iteration 1 - variant-01-evidence"]
+        B1["variant: variant-01-evidence\nscore: 0.950 +0.017\ncost: $0.456\nexplicit_ratio_avg: 0.941"]
+        B1Case1["case_001 PASS 0.950"]
+        B1Case2["case_002 PASS 1.000"]
+        B1Case3["case_003 FAIL 0.850\nabstract_entity / coarse_entity_granularity"]
+        B1Case4["case_004 PASS 0.950"]
+        B1Case5["case_005 PASS 1.000"]
+    end
+
+    Reflect1["反思 Iteration 1\ncase_003 仍未修复\n更新 constraints"]
+
+    subgraph Iteration2 ["Iteration 2 - variant-02-evidence"]
+        B2["variant: variant-02-evidence\nscore: 0.950 无提升\ncost: $0.785\nexplicit_ratio_avg: 0.877"]
+        B2Case1["case_001 PASS 0.950"]
+        B2Case2["case_002 PASS 1.000"]
+        B2Case3["case_003 FAIL 0.850\nabstract_entity / coarse_entity_granularity"]
+        B2Case4["case_004 PASS 0.950"]
+        B2Case5["case_005 PASS 1.000"]
+    end
+
+    Stop(["停止\nstopped_reason = max_iterations\n总 cost: $0.785\n总 LLM calls: 124"])
+    Best(["Best Variant\nvariant-01-evidence\nscore: 0.950\n已提升 explicit_ratio"])
+
+    Start --> Iteration0
+    Iteration0 --> Reflect0
+    Reflect0 --> Iteration1
+    Iteration1 --> Reflect1
+    Reflect1 --> Iteration2
+    Iteration2 --> Stop
+    Stop --> Best
+
+    style B0Case3 fill:#ffdce0,color:#82071e
+    style B1Case3 fill:#ffdce0,color:#82071e
+    style B2Case3 fill:#ffdce0,color:#82071e
+    style B1 fill:#dafbe1,color:#116329
+    style Best fill:#ddf4ff,color:#0a3069
+      </pre>
+    </div>
+
+    <div class="note">
+      <strong>关键观察：</strong>loop 在 Iteration 1 即达到最佳 score 0.950，Iteration 2 无提升却消耗了约 42% 的额外成本。
+      case_003 的 <code>abstract_entity</code> / <code>coarse_entity_granularity</code> 问题贯穿三轮，是下一轮应优先定向修复的瓶颈。
+    </div>
+  </div>
+</body>
+</html>

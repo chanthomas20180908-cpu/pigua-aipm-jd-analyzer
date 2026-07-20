@@ -1,0 +1,159 @@
+<!--
+目的：design-preview-01.html 旧版前端页面。
+定义：static/design-preview-01.html 是历史静态预览页。
+范围包括：
+- 旧版页面结构和视觉验证入口。
+范围不包括：
+- 不作为当前根路径默认页面。
+使用与修改规则：
+- 当前入口优先维护 design-preview-02.html。
+-->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>劈瓜 - 三步交互预览 01</title>
+    <link rel="stylesheet" href="design-preview-01.css" />
+  </head>
+  <body>
+    <main class="preview-page" id="preview-page" data-state="input">
+      <div class="corner-brand" aria-hidden="true">劈瓜</div>
+
+      <header class="topbar" aria-label="页面说明">
+        <div class="brand-lockup">
+          <div class="brand-row">
+            <img
+              class="hero-mark"
+              src="/static/assets/pigua/frame-01.png"
+              alt="拿着刀和西瓜的卡皮巴拉"
+            />
+            <h1>劈瓜</h1>
+          </div>
+          <p class="hero-subtitle">给AI产品经理的JD分析工具</p>
+        </div>
+      </header>
+
+      <section class="material-summary" id="material-summary" hidden>
+        <div>
+          <span class="summary-dot" aria-hidden="true"></span>
+          <strong>职位瓜收好了</strong>
+          <p>职位瓜已保留在本页，仅用于这次交互预览。</p>
+        </div>
+        <div class="summary-actions">
+          <button class="quiet-button" type="button" id="toggle-materials">展开查看</button>
+          <button class="quiet-button" type="button" id="reset-button">重新输入</button>
+        </div>
+      </section>
+
+      <section class="material-detail" id="material-detail" hidden>
+        <article>
+          <span>这只职位瓜</span>
+          <p id="jd-preview"></p>
+        </article>
+      </section>
+
+      <section class="view input-view" id="input-view" aria-labelledby="input-step-title">
+        <form class="input-card" id="preview-form">
+          <div class="card-head">
+            <p class="section-label input-step-title" id="input-step-title">Step 01 / 放瓜</p>
+          </div>
+
+          <div class="input-grid">
+            <label class="field">
+              <span>🍉 这里放岗位描述</span>
+              <textarea
+                id="jd-text"
+                rows="10"
+                placeholder="支持粘贴文字、上传文件或图片。
+看看它是真材实料，还是生瓜蛋子。"
+              ></textarea>
+            </label>
+          </div>
+
+          <p class="form-error" id="form-error" role="alert" hidden>先放岗位描述，才能劈瓜。</p>
+          <button class="primary-button" type="submit">劈开看看</button>
+        </form>
+      </section>
+
+      <section class="view loading-view" id="loading-view" aria-labelledby="loading-title" hidden>
+        <div class="loading-card">
+          <div class="card-head">
+            <h2 class="section-label input-step-title" id="loading-title">Step 02 / 劈瓜</h2>
+          </div>
+
+          <div class="loading-hero">
+            <div class="loading-mascot" aria-label="卡皮巴拉正在劈瓜">
+              <img
+                id="mascot-frame"
+                src="/static/assets/pigua/frame-01.png"
+                alt="卡皮巴拉正在劈开一只职位瓜"
+              />
+              <div class="mascot-placeholder" id="mascot-placeholder" hidden>
+                <strong>卡皮巴拉劈瓜.gif</strong>
+                <span>把多模态帧图放到 static/assets/pigua/ 后会自动播放。</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="loading-progress" aria-label="分析步骤">
+            <div class="loading-progress-track" aria-hidden="true">
+              <div class="loading-progress-fill"></div>
+            </div>
+            <ol class="loading-progress-steps">
+              <li>
+                <span class="progress-dot" aria-hidden="true"></span>
+                <strong>看瓜皮</strong>
+                <em>岗位标题有没有虚标</em>
+              </li>
+              <li>
+                <span class="progress-dot" aria-hidden="true"></span>
+                <strong>掂重量</strong>
+                <em>JD 要求是不是离谱</em>
+              </li>
+              <li>
+                <span class="progress-dot" aria-hidden="true"></span>
+                <strong>找吸铁石</strong>
+                <em>识别伪 AI 和外包味</em>
+              </li>
+              <li>
+                <span class="progress-dot" aria-hidden="true"></span>
+                <strong>看瓜瓤</strong>
+                <em>判断岗位核心任务</em>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="view result-view" id="result-view" aria-labelledby="result-title" hidden>
+        <div class="result-output-card">
+          <div class="card-head result-output-head">
+            <h2 class="section-label input-step-title" id="result-title">Step 03 / 看瓜</h2>
+          </div>
+          <article class="result-output" aria-label="分析结果">
+            <p>
+              半熟，是真 AI 岗，但别被标题带跑。
+            </p>
+            <p>
+              这只职位瓜不是生瓜蛋子，岗位更偏真 AI 应用型 PM，不是纯算法或模型训练岗位。
+              JD 里的核心任务集中在业务场景拆解、AI 能力边界判断、效果指标设计和跨团队落地。
+            </p>
+            <p>
+              但里面也有几个需要继续追问的点：模型能力由谁负责、PM 是否拥有指标定义权、
+              以及这个岗位到底是在做产品判断，还是在给现成模型补流程和写需求。
+            </p>
+            <p>
+              面试前建议重点拆三个问题：业务价值链在哪里、AI 能力是否真的参与主流程、
+              以及团队如何衡量上线后的效果。
+            </p>
+          </article>
+          <button class="primary-button result-action" type="button" id="result-reset-button">换个瓜再劈</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="design-preview-01.js"></script>
+  </body>
+</html>

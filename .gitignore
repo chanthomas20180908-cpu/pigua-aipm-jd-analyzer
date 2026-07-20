@@ -1,0 +1,32 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Runtime and generated artifacts
+logs/
+workbench/
+.worktrees/
+
+# Private inputs and internal materials
+data/
+docs/
+.agents/
+AGENTS.md
+CLAUDE.md
+CONTEXT.md
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,872 @@
+<!--
+目的：用可视化方式解释离线 iteration loop 的结构、评估器分层和具体案例。
+定义：独立静态说明页，通过浏览器直接打开或经 FastAPI 的 /static 路径访问。
+范围包括：
+- loop 主流程图、评估器分层图、术语解释和 element_modeling 例子演示。
+范围不包括：
+- 不调用后端接口、不执行真实 loop、不作为产品正式入口页。
+使用与修改规则：
+- 说明内容应与 .worktrees/loop-iteration-loop/app/iteration/ 和 docs/loop-design.md 保持一致。
+- 若 loop 节点、阈值或产物结构变化，应同步更新本页文案与图示。
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Loop Evaluator Explainer</title>
+    <style>
+      :root {
+        --bg: #f6efe2;
+        --paper: rgba(255, 251, 244, 0.88);
+        --ink: #1d1b19;
+        --muted: #675e53;
+        --line: rgba(29, 27, 25, 0.12);
+        --accent: #b3441f;
+        --accent-2: #1e6a61;
+        --accent-3: #d8a63c;
+        --shadow: 0 18px 50px rgba(65, 41, 18, 0.14);
+        --radius-lg: 28px;
+        --radius-md: 18px;
+        --radius-sm: 12px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(179, 68, 31, 0.14), transparent 28%),
+          radial-gradient(circle at top right, rgba(30, 106, 97, 0.14), transparent 26%),
+          linear-gradient(180deg, #f4ecdf 0%, #efe5d7 100%);
+        font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(29, 27, 25, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(29, 27, 25, 0.025) 1px, transparent 1px);
+        background-size: 22px 22px;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 92%);
+      }
+
+      .page {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 80px;
+      }
+
+      .hero,
+      .panel {
+        position: relative;
+        overflow: hidden;
+        background: var(--paper);
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px);
+      }
+
+      .hero {
+        padding: 34px 34px 28px;
+      }
+
+      .hero::after,
+      .panel::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        border-radius: inherit;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.62);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(29, 27, 25, 0.05);
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        font-family: "Avenir Next Condensed", "Helvetica Neue", "Arial Narrow", sans-serif;
+        letter-spacing: 0.02em;
+      }
+
+      h1 {
+        max-width: 900px;
+        font-size: clamp(36px, 7vw, 74px);
+        line-height: 0.92;
+      }
+
+      .subtitle {
+        max-width: 760px;
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.7;
+      }
+
+      .hero-grid,
+      .grid-3,
+      .diagram-grid,
+      .evaluator-grid,
+      .artifact-grid,
+      .example-grid {
+        display: grid;
+        gap: 18px;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1.15fr 0.85fr;
+        margin-top: 28px;
+      }
+
+      .grid-3,
+      .artifact-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .panel {
+        padding: 28px;
+        margin-top: 18px;
+      }
+
+      .mini-card,
+      .artifact,
+      .node,
+      .ladder-step,
+      .example-card,
+      .explain-card {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .mini-card {
+        padding: 20px;
+      }
+
+      .mini-card h3,
+      .artifact h3,
+      .node h3,
+      .ladder-step h3,
+      .example-card h3 {
+        font-size: 20px;
+      }
+
+      .mini-card p,
+      .artifact p,
+      .node p,
+      .ladder-step p,
+      .example-card p,
+      .explain-card p,
+      li {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.68;
+        font-size: 15px;
+      }
+
+      .mini-card p,
+      .artifact p,
+      .node p,
+      .ladder-step p,
+      .example-card p,
+      .explain-card p {
+        margin-top: 10px;
+      }
+
+      .stat-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        align-content: start;
+      }
+
+      .stat {
+        padding: 18px;
+        border-radius: var(--radius-md);
+        background: linear-gradient(145deg, rgba(29, 27, 25, 0.9), rgba(66, 45, 24, 0.88));
+        color: #fff8ef;
+      }
+
+      .stat strong {
+        display: block;
+        font-family: "Avenir Next Condensed", "Helvetica Neue", "Arial Narrow", sans-serif;
+        font-size: 30px;
+        line-height: 1;
+      }
+
+      .stat span {
+        display: block;
+        margin-top: 8px;
+        color: rgba(255, 248, 239, 0.76);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: end;
+        margin-bottom: 20px;
+      }
+
+      .section-head p {
+        max-width: 660px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .diagram-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        align-items: stretch;
+      }
+
+      .node {
+        position: relative;
+        padding: 18px;
+        min-height: 168px;
+      }
+
+      .node .tag,
+      .artifact .tag,
+      .ladder-step .tag,
+      .example-card .tag,
+      .mini-card .tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: rgba(179, 68, 31, 0.1);
+        color: var(--accent);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .node.flow-main {
+        background: linear-gradient(180deg, rgba(179, 68, 31, 0.08), rgba(255, 255, 255, 0.82));
+      }
+
+      .node.flow-eval {
+        background: linear-gradient(180deg, rgba(30, 106, 97, 0.08), rgba(255, 255, 255, 0.82));
+      }
+
+      .node.flow-branch {
+        background: linear-gradient(180deg, rgba(216, 166, 60, 0.1), rgba(255, 255, 255, 0.86));
+      }
+
+      .arrow-row {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 18px;
+        margin: 10px 0 4px;
+        color: var(--muted);
+        text-align: center;
+        font-family: "Avenir Next Condensed", "Helvetica Neue", "Arial Narrow", sans-serif;
+        font-size: 22px;
+      }
+
+      .callout {
+        margin-top: 18px;
+        padding: 18px 20px;
+        border-left: 4px solid var(--accent);
+        border-radius: 0 var(--radius-md) var(--radius-md) 0;
+        background: rgba(179, 68, 31, 0.08);
+      }
+
+      .callout strong {
+        font-family: "Avenir Next Condensed", "Helvetica Neue", "Arial Narrow", sans-serif;
+        font-size: 22px;
+      }
+
+      .evaluator-grid {
+        grid-template-columns: 1.1fr 0.9fr;
+      }
+
+      .ladder {
+        display: grid;
+        gap: 14px;
+      }
+
+      .ladder-step {
+        padding: 18px;
+      }
+
+      .ladder-step.det {
+        border-left: 5px solid var(--accent-2);
+      }
+
+      .ladder-step.judge {
+        border-left: 5px solid var(--accent-3);
+      }
+
+      .explain-card {
+        padding: 22px;
+      }
+
+      .checklist {
+        display: grid;
+        gap: 10px;
+        padding: 0;
+        margin: 14px 0 0;
+        list-style: none;
+      }
+
+      .checklist li {
+        position: relative;
+        padding-left: 22px;
+      }
+
+      .checklist li::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: var(--accent);
+        font-size: 20px;
+        line-height: 1;
+      }
+
+      .artifact {
+        padding: 18px;
+      }
+
+      .artifact code,
+      .inline-code {
+        font-family: "SFMono-Regular", "Menlo", "Consolas", monospace;
+        font-size: 13px;
+        color: #40271c;
+        background: rgba(179, 68, 31, 0.08);
+        padding: 2px 6px;
+        border-radius: 8px;
+      }
+
+      .example-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .step-btn {
+        appearance: none;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--ink);
+        padding: 10px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+        font: inherit;
+        transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+      }
+
+      .step-btn:hover,
+      .step-btn:focus-visible {
+        transform: translateY(-1px);
+      }
+
+      .step-btn.active {
+        background: var(--ink);
+        color: #fff7ee;
+      }
+
+      .example-grid {
+        grid-template-columns: 0.95fr 1.05fr;
+      }
+
+      .example-card {
+        padding: 22px;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .timeline .tick {
+        padding: 14px 16px;
+        border-radius: var(--radius-sm);
+        background: rgba(29, 27, 25, 0.04);
+        border: 1px dashed rgba(29, 27, 25, 0.12);
+      }
+
+      .tick strong {
+        display: block;
+        margin-bottom: 6px;
+        font-family: "Avenir Next Condensed", "Helvetica Neue", "Arial Narrow", sans-serif;
+        font-size: 18px;
+      }
+
+      .failure-list,
+      .constraint-list {
+        margin-top: 14px;
+        padding-left: 18px;
+      }
+
+      .failure-list li::marker {
+        color: var(--accent);
+      }
+
+      .status-band {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+      }
+
+      .pill {
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+
+      .pill.fail {
+        background: rgba(179, 68, 31, 0.14);
+        color: #8b3113;
+      }
+
+      .pill.pass {
+        background: rgba(30, 106, 97, 0.13);
+        color: #1f655c;
+      }
+
+      .pill.warn {
+        background: rgba(216, 166, 60, 0.17);
+        color: #926a10;
+      }
+
+      .footer-note {
+        margin-top: 20px;
+        color: var(--muted);
+        text-align: center;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 980px) {
+        .hero-grid,
+        .grid-3,
+        .diagram-grid,
+        .arrow-row,
+        .evaluator-grid,
+        .artifact-grid,
+        .example-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .arrow-row {
+          display: none;
+        }
+
+        .section-head {
+          display: block;
+        }
+
+        .stat-strip {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <div class="eyebrow">Offline Evaluator-Optimizer Loop</div>
+        <h1>这套 loop 不是“AI 评 AI”</h1>
+        <p class="subtitle">
+          它真正干的事，是先用确定性规则把结构、引用、证据和语义硬伤卡死，只有这些都过了，才允许
+          LLM 做更主观的复核。换句话说：规则先当保安，LLM 后当评委，reflector 当教练。
+        </p>
+
+        <div class="hero-grid">
+          <div class="grid-3">
+            <article class="mini-card">
+              <span class="tag">目标</span>
+              <h3>优化子模块，不改线上默认行为</h3>
+              <p>
+                loop 只在离线 worktree 里注入 prompt/code 变体，用真实 v4 工作流结果来评估哪个变体更好。
+              </p>
+            </article>
+            <article class="mini-card">
+              <span class="tag">核心原则</span>
+              <h3>先硬评估，后主观复核</h3>
+              <p>
+                确定性断言失败时，直接跳过 LLM judge，避免“说得像回事”掩盖结构和事实问题。
+              </p>
+            </article>
+            <article class="mini-card">
+              <span class="tag">结果产物</span>
+              <h3>每一轮都有证据链</h3>
+              <p>
+                最后会落出 report、state、case 结果、变体清单和 promotion 建议，方便人工复盘。
+              </p>
+            </article>
+          </div>
+
+          <div class="stat-strip">
+            <div class="stat">
+              <strong>6</strong>
+              <span>状态节点：generate_variant → run_trial → deterministic_eval → llm_judge → reflect → prepare_promotion</span>
+            </div>
+            <div class="stat">
+              <strong>2</strong>
+              <span>评估层：确定性规则是主层，LLM judge 是辅层，而且只能压分不能抬分。</span>
+            </div>
+            <div class="stat">
+              <strong>0</strong>
+              <span>自动 push / 自动 merge。最佳变体只会写进 run worktree，最终仍需要人工确认。</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="flow">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">01 / 主流程</div>
+            <h2>整套 loop 是怎么转起来的</h2>
+          </div>
+          <p>
+            先生成本轮变体，再跑真实工作流拿结果，先做确定性评估；不达标就复盘并生成下一轮约束，达标才允许进入
+            LLM 复核。整个过程围绕“先卡硬伤，再谈质量”。
+          </p>
+        </div>
+
+        <div class="diagram-grid">
+          <article class="node flow-main">
+            <span class="tag">Node 1</span>
+            <h3>generate_variant</h3>
+            <p>生成 baseline 或新变体。后续变体会带着上轮 reflector 给出的明确约束。</p>
+          </article>
+          <article class="node flow-main">
+            <span class="tag">Node 2</span>
+            <h3>run_trial</h3>
+            <p>拿这个变体去跑真实 v4 工作流，不是假分，不是 mock，直接看真实 target 输出。</p>
+          </article>
+          <article class="node flow-eval">
+            <span class="tag">Node 3</span>
+            <h3>deterministic_eval</h3>
+            <p>检查结构、数量、ID 引用、explicit ratio、case 级语义标签。这里是主裁判。</p>
+          </article>
+          <article class="node flow-branch">
+            <span class="tag">Node 4</span>
+            <h3>llm_judge</h3>
+            <p>只有确定性过线后才会进来，负责更主观的忠实度、颗粒度、关系自然度复核。</p>
+          </article>
+          <article class="node flow-main">
+            <span class="tag">Node 5</span>
+            <h3>reflect / prepare</h3>
+            <p>不过就 reflect，把失败翻译成下一轮约束；过了就 prepare promotion，保存最佳变体。</p>
+          </article>
+        </div>
+
+        <div class="arrow-row" aria-hidden="true">
+          <div>↓</div>
+          <div>↓</div>
+          <div>↓</div>
+          <div>↓</div>
+          <div>↓</div>
+        </div>
+
+        <div class="callout">
+          <strong>最关键的一条</strong>
+          <p>
+            确定性评估没过，LLM 没有发言权。这样就避免了“结构明明错了，但 judge 觉得还行”的盲目通过。
+          </p>
+        </div>
+      </section>
+
+      <section class="panel" id="evaluator">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">02 / 评估器</div>
+            <h2>评估器分两层，但地位不对等</h2>
+          </div>
+          <p>
+            这套设计不是两个评委平起平坐，而是先过机器质检，再过高级验货。前一层负责“不能错”，后一层才负责“更像好答案”。
+          </p>
+        </div>
+
+        <div class="evaluator-grid">
+          <div class="ladder">
+            <article class="ladder-step det">
+              <span class="tag">第一层 / 主层</span>
+              <h3>Deterministic Eval</h3>
+              <p>用 Promptfoo 或 Python evaluator 做硬断言。这里不看文采，只看结构、引用、证据和语义硬伤。</p>
+              <ul class="checklist">
+                <li>是不是合法 JSON 对象</li>
+                <li>数量阈值够不够，比如 value_stream、work_items 最少几个</li>
+                <li>ID 是否自洽，不能引用不存在的 entity / capability / work item</li>
+                <li>explicit evidence ratio 是否达标，避免 inferred 堆满一页</li>
+                <li>是否命中 hard failure tags，比如缺 AI 中间层、工作事项过粗、value stream 命名失真</li>
+              </ul>
+            </article>
+
+            <article class="ladder-step judge">
+              <span class="tag">第二层 / 辅层</span>
+              <h3>LLM Judge</h3>
+              <p>只有前面过了才会执行。它看的是更主观的质量，比如忠于 JD 原文、颗粒度是否稳、关系是否自然。</p>
+              <ul class="checklist">
+                <li>judge 只能压分，不能抬分</li>
+                <li>最终分数取 <span class="inline-code">min(确定性分, judge分)</span></li>
+                <li>所以一个硬伤结果，没法被“嘴说圆了”洗白</li>
+              </ul>
+            </article>
+          </div>
+
+          <aside class="explain-card">
+            <div class="eyebrow">一句人话</div>
+            <h3>为什么它不容易“盲目通过”</h3>
+            <p>
+              因为它先问“你有没有答对格式、证据、引用和结构”，再问“你答得好不好”。前一个问题没过，后一个问题根本不问。
+            </p>
+            <div class="status-band">
+              <span class="pill fail">结构错：直接打回</span>
+              <span class="pill warn">结构过：再看主观质量</span>
+              <span class="pill pass">双层都过：才可能 promotion</span>
+            </div>
+            <p style="margin-top: 16px;">
+              这就是这套 loop 和“让另一个大模型随便点评一下”的本质区别。它先消灭瞎编、乱连、过度概括，再谈优化表达。
+            </p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="panel" id="example">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">03 / 具体例子</div>
+            <h2>拿 <span class="inline-code">element_modeling</span> 跑一遍</h2>
+          </div>
+          <p>
+            这是这套 loop 最典型的应用场景。目标通常是：减少抽象实体、补足 AI 中间层、保证 ID 自洽、提高 explicit 证据占比。
+          </p>
+        </div>
+
+        <div class="example-toolbar" role="tablist" aria-label="Loop example steps">
+          <button class="step-btn active" data-step="0" role="tab" aria-selected="true">第 0 轮 baseline</button>
+          <button class="step-btn" data-step="1" role="tab" aria-selected="false">第 1 轮 reflect 后</button>
+          <button class="step-btn" data-step="2" role="tab" aria-selected="false">第 2 轮 judge 通过</button>
+        </div>
+
+        <div class="example-stage" data-panel="0">
+          <div class="example-grid">
+            <article class="example-card">
+              <span class="tag">输入现状</span>
+              <h3>baseline 看起来完整，但问题很多</h3>
+              <div class="timeline">
+                <div class="tick">
+                  <strong>value stream 写成大白话总结句</strong>
+                  <p>例如“从需求到上线优化的完整闭环”，听起来完整，但不像稳定业务名称。</p>
+                </div>
+                <div class="tick">
+                  <strong>AI 中间层缺失</strong>
+                  <p>没拆出知识库、Agent 工作流、模型服务这类平台对象。</p>
+                </div>
+                <div class="tick">
+                  <strong>工作事项过粗</strong>
+                  <p>把规划、交付推进、验收测试糊成一个大动作，难以验证。</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="example-card">
+              <span class="tag">deterministic_eval 输出</span>
+              <h3>这一轮不会进 LLM judge</h3>
+              <ul class="failure-list">
+                <li><span class="inline-code">explicit evidence ratio 0.52 &lt; 0.70</span></li>
+                <li><span class="inline-code">work_item WI3 references missing capability CAP7</span></li>
+                <li><span class="inline-code">missing_ai_transformation_layer</span></li>
+                <li><span class="inline-code">overly_broad_work_item</span></li>
+              </ul>
+              <div class="status-band">
+                <span class="pill fail">结构未过线</span>
+                <span class="pill fail">直接 reflect</span>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="example-stage hidden" data-panel="1">
+          <div class="example-grid">
+            <article class="example-card">
+              <span class="tag">reflector 产物</span>
+              <h3>失败原因会被翻成下一轮约束</h3>
+              <ul class="constraint-list">
+                <li>补出 AI 改造中间层实体，不要只停留在业务流程和产品方案。</li>
+                <li>把 JD 明确出现但当前缺失的阶段拆成独立 work item。</li>
+                <li>每个主要实体优先引用 JD 原文，减少 inferred 项。</li>
+                <li><span class="inline-code">capability_ids</span> 只能引用真实存在的 capability。</li>
+              </ul>
+            </article>
+
+            <article class="example-card">
+              <span class="tag">新变体效果</span>
+              <h3>第 1 轮结构已经明显变好</h3>
+              <div class="timeline">
+                <div class="tick">
+                  <strong>explicit ratio 升到 0.76</strong>
+                  <p>说明模型不再大量凭空补 inferred 项。</p>
+                </div>
+                <div class="tick">
+                  <strong>ID 错误被修正</strong>
+                  <p>图谱内部引用自洽了，不会出现“连向不存在的节点”。</p>
+                </div>
+                <div class="tick">
+                  <strong>只剩 naming 类问题</strong>
+                  <p>结构过线后，才轮到更细的“命名是否稳”问题。</p>
+                </div>
+              </div>
+              <div class="status-band">
+                <span class="pill warn">允许进入 LLM judge</span>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="example-stage hidden" data-panel="2">
+          <div class="example-grid">
+            <article class="example-card">
+              <span class="tag">LLM judge 复核</span>
+              <h3>这时候才看“更像不像好答案”</h3>
+              <p>
+                judge 会盯住“忠于 JD 原文、颗粒度是否合理、关系是否自然”。如果 judge 认为 value stream
+                还是像摘要句，就会继续压分并给出改写建议。
+              </p>
+              <div class="timeline">
+                <div class="tick">
+                  <strong>judge 给分 0.81</strong>
+                  <p>即便确定性分更高，最终分仍取较小值，不允许 judge 抬分洗白。</p>
+                </div>
+                <div class="tick">
+                  <strong>suggested_change</strong>
+                  <p>把 value_stream_name 改成稳定业务名称，而不是“从 A 到 B”的总结句。</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="example-card">
+              <span class="tag">最终结果</span>
+              <h3>第 2 轮达到 promotion 条件</h3>
+              <p>
+                变体改完命名后，结构层过线，judge 也过线，trial 总分高于阈值，controller 就会进入
+                <span class="inline-code">prepare_promotion</span>。
+              </p>
+              <ul class="failure-list">
+                <li>保存最佳变体到 run worktree</li>
+                <li>落出 report、state、case_results、variants、PROMOTION</li>
+                <li>仍然不自动 merge，人工最后拍板</li>
+              </ul>
+              <div class="status-band">
+                <span class="pill pass">passed</span>
+                <span class="pill pass">prepare_promotion</span>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="artifacts">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">04 / 产物</div>
+            <h2>跑完之后你会看到什么文件</h2>
+          </div>
+          <p>
+            这部分不是附属品，而是证据链。它们把“为什么过、为什么没过、下一轮怎么改”全部拆开留下来。
+          </p>
+        </div>
+
+        <div class="artifact-grid">
+          <article class="artifact">
+            <span class="tag">人工读</span>
+            <h3><span class="inline-code">report.md</span></h3>
+            <p>看每一轮变体的总分、回归分、capability 分、失败归因和预算摘要。</p>
+          </article>
+          <article class="artifact">
+            <span class="tag">机器读</span>
+            <h3><span class="inline-code">loop_state.json</span></h3>
+            <p>记录 node_trace、最佳 trial、每轮 case 结果和停止原因，是最完整的状态快照。</p>
+          </article>
+          <article class="artifact">
+            <span class="tag">逐 case</span>
+            <h3><span class="inline-code">case_results.jsonl</span></h3>
+            <p>每个 case 的分数、失败原因、metrics、trace_id、trace_log_path 都会单独留存。</p>
+          </article>
+          <article class="artifact">
+            <span class="tag">变体清单</span>
+            <h3><span class="inline-code">variants.json</span></h3>
+            <p>列出本次实际评估过的 prompt/code 变体，方便回看每轮究竟改了什么。</p>
+          </article>
+          <article class="artifact">
+            <span class="tag">推广建议</span>
+            <h3><span class="inline-code">PROMOTION.md</span></h3>
+            <p>只写“建议推广哪段 delta”，不自动推生产；最后仍需要人工确认。</p>
+          </article>
+          <article class="artifact">
+            <span class="tag">深挖 trace</span>
+            <h3><span class="inline-code">logs/{trace_id}.md</span></h3>
+            <p>如果你想看单个 case 的真实输入、输出和 LLM 响应，最后还是回到 trace 日志里核查。</p>
+          </article>
+        </div>
+      </section>
+
+      <p class="footer-note">
+        访问方式：<span class="inline-code">/static/loop-iteration-explainer.html</span><br />
+        这页只解释 worktree 里的离线 iteration loop，不解释主仓里通用的 v2/v4 评测规则。
+      </p>
+    </main>
+
+    <script>
+      const buttons = Array.from(document.querySelectorAll(".step-btn"));
+      const panels = Array.from(document.querySelectorAll(".example-stage"));
+
+      function activateStep(step) {
+        buttons.forEach((button) => {
+          const active = button.dataset.step === step;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-selected", String(active));
+        });
+
+        panels.forEach((panel) => {
+          panel.classList.toggle("hidden", panel.dataset.panel !== step);
+        });
+      }
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => activateStep(button.dataset.step));
+      });
+    </script>
+  </body>
+</html>

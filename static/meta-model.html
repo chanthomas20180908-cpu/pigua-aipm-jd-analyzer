@@ -1,0 +1,173 @@
+<!--
+目的：展示 AI PM JD 元模型的独立详情页。
+定义：提供 `/meta-model` 路由使用的静态说明页面。
+范围包括：
+- 元模型定义、9 节点图谱与定义双视图、12 维判断说明和业务能力树。
+范围不包括：
+- 不承载动态图谱编辑，不读取运行时分析结果。
+使用与修改规则：
+- 文案结构调整时同步 `meta-model.css` 与 `meta-model.js` 的选择器。
+-->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="劈瓜元模型页：展示 AI 产品经理 JD 分析的九节点图谱、12 维判断和能力树。"
+    />
+    <meta property="og:title" content="劈瓜 | AI PM JD 元模型" />
+    <meta property="og:description" content="查看劈瓜如何用元模型拆解岗位、业务链路、能力和风险。" />
+    <meta property="og:image" content="/static/assets/capybara/capybara-grid-og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>劈瓜 | Meta Model</title>
+    <link rel="icon" type="image/png" href="/static/assets/favicon/favicon.png" />
+    <script src="/static/theme.js"></script>
+    <link rel="stylesheet" href="/static/theme.css" />
+    <link rel="stylesheet" href="/static/meta-model.css" />
+  </head>
+  <body>
+    <main class="meta-shell">
+      <header class="meta-topbar reveal" style="--delay: 0.05s">
+        <div class="meta-topbar-main">
+          <a class="brand-chip" href="/">劈瓜</a>
+          <a class="back-link" href="/about">返回 About</a>
+        </div>
+        <button class="theme-toggle" id="theme-toggle" type="button" data-theme-toggle aria-label="切换主题">
+          夜色切换
+        </button>
+      </header>
+
+      <section class="meta-hero reveal" style="--delay: 0.1s">
+        <p class="eyebrow">Meta Model / v4 reasoning scaffold</p>
+        <h1>元模型不是装饰，是判断顺序。</h1>
+        <p class="hero-copy">
+          劈瓜把 JD 先还原成公司上下文、岗位职责、业务链路、环境与风险，再去做“这岗位值不值得冲”的判断。这样输出才不是词频统计，而是业务视角下的结构化判断。
+        </p>
+      </section>
+
+      <section class="meta-section reveal" style="--delay: 0.16s">
+        <div class="section-head">
+          <p class="eyebrow">01 / 九节点</p>
+          <h2>岗位理解图谱</h2>
+        </div>
+        <p class="flow-note">
+          先看公司上下文和岗位壳子，再顺着价值流、工作事项、业务实体和能力看下去，最后把任职要求、工作环境和风险收口。
+        </p>
+        <div class="meta-graph-board">
+          <div class="meta-graph-card">
+            <div class="meta-graph-toolbar">
+              <span>点击节点查看定义和关系</span>
+              <button class="meta-fit-button" type="button" id="metaFitView">一屏看清</button>
+            </div>
+            <div class="meta-graph-wrap" id="metaGraphWrap">
+              <svg id="metaGraphSvg" role="img" aria-label="AI PM JD 元模型图谱"></svg>
+            </div>
+            <div class="meta-graph-legend">
+              <span class="legend-item"><span class="legend-swatch context"></span>公司上下文</span>
+              <span class="legend-item"><span class="legend-swatch job"></span>岗位</span>
+              <span class="legend-item"><span class="legend-swatch flow"></span>价值流</span>
+              <span class="legend-item"><span class="legend-swatch work"></span>工作事项</span>
+              <span class="legend-item"><span class="legend-swatch entity"></span>业务实体</span>
+              <span class="legend-item"><span class="legend-swatch capability"></span>业务能力</span>
+              <span class="legend-item"><span class="legend-swatch requirement"></span>任职要求</span>
+              <span class="legend-item"><span class="legend-swatch environment"></span>工作环境</span>
+              <span class="legend-item"><span class="legend-swatch risk"></span>风险</span>
+            </div>
+          </div>
+          <aside class="meta-definition-card">
+            <p class="eyebrow">定义 / 选中节点</p>
+            <h3 id="metaNodeTitle">公司上下文</h3>
+            <p class="meta-node-summary" id="metaNodeSummary"></p>
+            <div class="meta-detail-list-wrap" id="metaNodeRelations"></div>
+          </aside>
+        </div>
+        <div class="meta-node-library" id="metaNodeLibrary" aria-label="元模型节点定义库"></div>
+      </section>
+
+      <section class="meta-section reveal" style="--delay: 0.22s">
+        <div class="section-head">
+          <p class="eyebrow">02 / 十二维</p>
+          <h2>核心判断展开</h2>
+        </div>
+        <div class="judgment-grid">
+          <article>
+            <h3>岗位定位</h3>
+            <p>这是 owner 型产品经理，还是偏执行、偏项目、偏售前的混合角色。</p>
+          </article>
+          <article>
+            <h3>业务价值</h3>
+            <p>岗位在创造收入、提升效率还是做品牌包装，价值闭环是否清楚。</p>
+          </article>
+          <article>
+            <h3>AI 含量</h3>
+            <p>是实打实的模型、数据、Agent 工作，还是蹭 AI 外壳的旧产品岗位。</p>
+          </article>
+          <article>
+            <h3>权责边界</h3>
+            <p>职责是否成体系，还是把策略、运营、交付、售前全压到一个人身上。</p>
+          </article>
+          <article>
+            <h3>协作复杂度</h3>
+            <p>岗位需要拉通多少团队，组织接口是否清楚，扯皮成本会不会过高。</p>
+          </article>
+          <article>
+            <h3>交付节奏</h3>
+            <p>是长期系统建设，还是高压短平快；节奏是否和岗位级别匹配。</p>
+          </article>
+          <article>
+            <h3>数据要求</h3>
+            <p>是否要求数据理解、指标拆解和评估方法，而不是泛泛“有数据意识”。</p>
+          </article>
+          <article>
+            <h3>技术理解</h3>
+            <p>需要懂 API、prompt、评测，还是只需要写 PRD 就够。</p>
+          </article>
+          <article>
+            <h3>行业门槛</h3>
+            <p>领域知识要求是否硬核，候选人是否必须有特定场景履历。</p>
+          </article>
+          <article>
+            <h3>候选人优势</h3>
+            <p>这个岗位最奖励哪类候选人，是懂业务的人还是懂模型的人。</p>
+          </article>
+          <article>
+            <h3>隐性风险</h3>
+            <p>是否存在 title 虚高、职责失衡、AI 伪需求、交付责任甩锅等信号。</p>
+          </article>
+          <article>
+            <h3>面试抓手</h3>
+            <p>候选人应该重点准备价值流、案例、指标、评测还是落地过程。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="meta-section reveal" style="--delay: 0.28s">
+        <div class="section-head">
+          <p class="eyebrow">03 / 能力树</p>
+          <h2>业务能力 12 大类</h2>
+        </div>
+        <div class="capability-tree">
+          <div><strong>用户研究</strong><span>访谈、画像、痛点识别</span></div>
+          <div><strong>需求建模</strong><span>问题定义、优先级、场景拆解</span></div>
+          <div><strong>业务抽象</strong><span>价值流、流程、角色、实体建模</span></div>
+          <div><strong>方案设计</strong><span>PRD、交互、prompt、Agent 流程</span></div>
+          <div><strong>数据分析</strong><span>指标、评估、实验、诊断</span></div>
+          <div><strong>技术理解</strong><span>模型能力边界、API、向量库、工具链</span></div>
+          <div><strong>项目推进</strong><span>排期、协同、风险管理</span></div>
+          <div><strong>上线运营</strong><span>灰度、反馈闭环、迭代节奏</span></div>
+          <div><strong>行业理解</strong><span>垂类规则、场景知识、合规约束</span></div>
+          <div><strong>商业判断</strong><span>ROI、客单价、转化、收入逻辑</span></div>
+          <div><strong>表达沟通</strong><span>跨团队对齐、汇报、方案讲清楚</span></div>
+          <div><strong>风险识别</strong><span>识别伪 AI、伪需求和组织陷阱</span></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/d3.v7.min.js"></script>
+    <script src="/static/meta-model-data.js"></script>
+    <script src="/static/meta-model-graph.js"></script>
+  </body>
+</html>

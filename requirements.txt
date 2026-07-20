@@ -1,0 +1,15 @@
+# 目的：声明本项目本地运行所需的 Python 依赖。
+# 定义：pip requirements 格式的依赖清单文件。
+# 范围包括：
+# - FastAPI 服务、uvicorn 本地运行和 OpenAI 兼容客户端依赖。
+# 范围不包括：
+# - 不固定系统 Python 版本，不记录前端静态资源依赖。
+# 使用与修改规则：
+# - 新增后端运行时依赖时固定版本，并同步 README 的安装说明。
+
+fastapi==0.115.12
+uvicorn==0.34.3
+openai==1.93.0
+langgraph==0.5.1
+dspy-ai==2.6.27
+pytest==8.4.1

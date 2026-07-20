@@ -1,0 +1,52 @@
+# 目的：定义 GitHub Actions 本地等价检查链路。
+# 定义：仓库 PR/分支 CI 工作流配置。
+# 范围包括：
+# - Python 依赖安装、编译检查、单元测试和 FastAPI 健康检查。
+# 范围不包括：
+# - 不执行真实 LLM 调用，不发布、不部署、不推送。
+# 使用与修改规则：
+# - CI 步骤应与 `make ci` 保持一致；新增检查时同步 Makefile 和 README。
+
+name: CI
+
+on:
+  push:
+    branches: ["main", "feat/**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run local CI
+        run: make ci PYTHON=python
+
+      - name: Start service
+        run: |
+          python scripts/dev.py --host 127.0.0.1 --port 8000 --no-reload &
+          echo $! > uvicorn.pid
+          sleep 3
+
+      - name: Check health endpoint
+        run: curl -fsS http://127.0.0.1:8000/health
+
+      - name: Stop service
+        if: always()
+        run: |
+          if [ -f uvicorn.pid ]; then
+            kill "$(cat uvicorn.pid)" || true
+          fi

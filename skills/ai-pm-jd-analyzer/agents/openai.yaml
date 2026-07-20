@@ -1,0 +1,9 @@
+# 目的：提供 AI PM JD skill 的 Codex UI 元数据。
+# 定义：skill 显示名称、简介和默认调用提示的机器可读配置。
+# 范围包括：interface 下的用户可见 metadata。
+# 范围不包括：外部工具依赖、API 配置或业务分析规则。
+# 使用与修改规则：保持与 SKILL.md 名称和能力一致；使用 skill-creator 脚本生成后可保留本说明。
+interface:
+  display_name: "AI PM JD Analyzer"
+  short_description: "基于业务元模型与证据规则自主分析 AI 产品岗位 JD"
+  default_prompt: "Use $ai-pm-jd-analyzer to analyze the following AI PM job description."

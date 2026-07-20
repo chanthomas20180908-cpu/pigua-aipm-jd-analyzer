@@ -1,0 +1,52 @@
+<!--
+目的：提供品牌化错误页。
+定义：FastAPI 404/503 exception handler 返回的静态 HTML 页面。
+范围包括：
+- 错误状态文案、返回入口和主题资源引用。
+范围不包括：
+- 不展示服务端堆栈，不读取运行日志，不承载业务交互。
+使用与修改规则：
+- 修改结构类名时同步 `static/error.css`。
+-->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="劈瓜错误页：AI 产品经理 JD 分析工具暂时无法完成当前请求。"
+    />
+    <meta property="og:title" content="劈瓜 | 请求没劈开" />
+    <meta property="og:description" content="AI 产品经理 JD 分析工具的品牌错误页。" />
+    <meta property="og:image" content="/static/assets/capybara/capybara-grid-og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>劈瓜 | 请求没劈开</title>
+    <link rel="icon" type="image/png" href="/static/assets/favicon/favicon.png" />
+    <script src="/static/theme.js"></script>
+    <link rel="stylesheet" href="/static/theme.css" />
+    <link rel="stylesheet" href="/static/error.css" />
+  </head>
+  <body>
+    <main class="error-shell">
+      <section class="error-panel">
+        <div class="error-copy">
+          <p class="eyebrow">Request failed</p>
+          <h1 id="error-title">__ERROR_STATUS__ / 这只瓜暂时没劈开</h1>
+          <p id="error-message">
+            __ERROR_MESSAGE__
+          </p>
+          <div class="error-actions">
+            <a class="primary-link" href="/">回到分析入口</a>
+            <a class="secondary-link" href="/about">查看项目说明</a>
+          </div>
+        </div>
+        <img
+          src="/static/assets/capybara/capybara-grid.png"
+          alt="劈瓜项目吉祥物"
+        />
+      </section>
+    </main>
+  </body>
+</html>
