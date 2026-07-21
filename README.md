@@ -22,6 +22,14 @@
 
 ![劈瓜项目预览](static/assets/hero-screenshot.png)
 
+## 工程实现与验证边界
+
+- **双轨评测机制**：离线 Evaluator–Optimizer Loop 支持将回归集与能力集分开评估，并用回归保护避免能力爬坡掩盖退化；公开仓库不包含私有评测数据。
+- **历史 MVP 回归实验**：旧私有原型的 5-case 回归 run 将 `element_modeling` 最佳 score 从 **0.9333 提升到 0.9500**，且无 timeout 或执行失败。该 run 未包含 capability 集，不能视作双轨 combined score；完整口径见[脱敏验证摘要](HISTORICAL_MVP_VALIDATION.md)。
+- **产品化链路**：提供 FastAPI 服务、JSON/Markdown 结果导出、`.txt` / `.md` / `.docx` 输入、本地 `make ci` 与冻结的 `/sample` 前端验收样例。历史 Loop [流程图源码](static/loop-648097f5ed-report.html)可在本地启动服务后打开渲染版。
+
+上述历史实验不是模型准确率、线上用户效果或商业指标，也不代表当前公开提交可复现相同分数。
+
 ## 使用 Skill
 
 Skill 源包位于 `skills/ai-pm-jd-analyzer/`，无需 API Key、无需联网，也不调用本仓库的 Web API。
@@ -57,7 +65,7 @@ python3 -m pip install -r requirements.txt
 make dev
 ```
 
-本地访问 `http://127.0.0.1:8000`，运行 `make ci` 执行编译、工作流、前端和 Skill 结构检查。
+本地访问 `http://127.0.0.1:8000`，运行 `make ci` 执行编译、工作流、前端、Makefile 可移植性和 Skill 结构检查。`/sample` 使用冻结 fixture 验收结果页，不调用 LLM，也不写入浏览器历史记录。
 
 ## 公开仓库边界
 
