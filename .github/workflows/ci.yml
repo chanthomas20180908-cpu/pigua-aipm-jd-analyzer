@@ -11,7 +11,7 @@ name: CI
 
 on:
   push:
-    branches: ["main", "feat/**"]
+    branches: ["main", "feat/**", "fix/**", "chore/**"]
   pull_request:
 
 jobs:

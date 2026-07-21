@@ -80,7 +80,7 @@ export AIPM_LOOP_CASE_TIMEOUT_SECONDS=300
 本地最小检查链路：
 
 ```bash
-PYTHONPYCACHEPREFIX=/private/tmp/aipm_resume_analyzer_pycache python3 -m compileall app scripts tests
+PYTHONPYCACHEPREFIX=/tmp/aipm_resume_analyzer_pycache python3 -m compileall app scripts tests
 python3 -m unittest tests.unit.test_iteration_components -v
 python3 -m pytest tests/unit/test_llm_client.py
 ```

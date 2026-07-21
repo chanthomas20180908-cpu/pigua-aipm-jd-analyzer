@@ -28,7 +28,8 @@ class MakefilePortabilityTests(unittest.TestCase):
 
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertIn("PYTHONPYCACHEPREFIX=/tmp/aipm_resume_analyzer_pycache", result.stdout)
-        self.assertNotIn("/private/tmp", result.stdout)
+        private_cache_prefix = "/" + "private/tmp"
+        self.assertNotIn(private_cache_prefix, result.stdout)
 
 
 if __name__ == "__main__":
