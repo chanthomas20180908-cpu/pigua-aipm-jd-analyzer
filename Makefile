@@ -12,7 +12,7 @@ HOST ?= 127.0.0.1
 PORT ?= 8000
 PYTHONPYCACHEPREFIX ?= /tmp/aipm_resume_analyzer_pycache
 
-.PHONY: dev demo health test ci compile
+.PHONY: dev demo health boundary test ci compile
 
 dev:
 	$(PYTHON) scripts/dev.py --host $(HOST) --port $(PORT)
@@ -31,7 +31,11 @@ health:
 compile:
 	PYTHONPYCACHEPREFIX=$(PYTHONPYCACHEPREFIX) $(PYTHON) -m compileall app scripts tests
 
+boundary:
+	$(PYTHON) scripts/verify_public_boundary.py
+
 test: compile
+	$(PYTHON) -m unittest tests.unit.test_public_boundary -v
 	$(PYTHON) -m unittest tests.unit.test_makefile_portability -v
 	$(PYTHON) -m unittest tests.unit.test_iteration_components -v
 	$(PYTHON) -m pytest tests/unit/test_llm_client.py tests/unit/test_narration_prompt.py
@@ -39,4 +43,4 @@ test: compile
 	$(PYTHON) -m unittest tests.unit.test_frontend_sample_extractor -v
 	$(PYTHON) -m unittest tests.unit.test_ai_pm_jd_skill -v
 
-ci: test
+ci: boundary test
