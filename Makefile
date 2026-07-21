@@ -10,7 +10,7 @@
 PYTHON ?= python3
 HOST ?= 127.0.0.1
 PORT ?= 8000
-PYTHONPYCACHEPREFIX ?= /private/tmp/aipm_resume_analyzer_pycache
+PYTHONPYCACHEPREFIX ?= /tmp/aipm_resume_analyzer_pycache
 
 .PHONY: dev demo health test ci compile
 
@@ -32,6 +32,7 @@ compile:
 	PYTHONPYCACHEPREFIX=$(PYTHONPYCACHEPREFIX) $(PYTHON) -m compileall app scripts tests
 
 test: compile
+	$(PYTHON) -m unittest tests.unit.test_makefile_portability -v
 	$(PYTHON) -m unittest tests.unit.test_iteration_components -v
 	$(PYTHON) -m pytest tests/unit/test_llm_client.py tests/unit/test_narration_prompt.py
 	$(PYTHON) -m unittest tests.unit.test_frontend_structure -v
