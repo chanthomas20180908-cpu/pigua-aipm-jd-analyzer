@@ -3,7 +3,7 @@
 定义：随 ai-pm-jd-analyzer skill 分发的本地辅助工具目录。
 范围包括：从完整 Markdown 报告生成离线 HTML 的确定性脚本。
 范围不包括：不调用模型、网络、项目 API，不保存原始 JD 或调试日志。
-使用与修改规则：仅在用户明确请求图形化报告并提供输出路径时运行；变更 JSON 契约时同步更新脚本和单元测试。
+使用与修改规则：由 Skill 在每次默认分析完成后生成 HTML；变更 JSON 契约时同步更新脚本和单元测试。
 -->
 
 # tools 目录说明
@@ -33,6 +33,6 @@ python3 /path/to/ai-pm-jd-analyzer/tools/render_full_model_report.py \
   report.md --output report.html
 ```
 
-- 输出路径必须显式给出；已有文件需要额外传入 `--force` 才会覆盖。
+- Skill 默认将 `report.md` 与 `report.html` 保存到调用目录的 `.agents/ai-pm-jd-reports/<unique-run-id>/`；已有文件不得覆盖。
 - 输入 Markdown 必须含有“结构化模型 JSON”章节下唯一的 `json` fenced block。
 - HTML 默认链接回输入 Markdown 的相对路径；移动其中一个文件时应一并移动另一个。

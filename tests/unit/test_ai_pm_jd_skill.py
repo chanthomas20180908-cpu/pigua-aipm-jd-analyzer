@@ -49,7 +49,11 @@ class AiPmJdSkillTests(unittest.TestCase):
         self.assertNotIn("https://", renderer)
         self.assertNotIn("requests", renderer)
         self.assertIn("Do not browse, call APIs, start this repository's service", self.skill)
-        self.assertIn("Optional visual delivery", self.skill)
+        self.assertIn("Automatic local delivery", self.skill)
+        self.assertIn(".agents/ai-pm-jd-reports/<unique-run-id>/", self.skill)
+        self.assertIn("report.md", self.skill)
+        self.assertIn("report.html", self.skill)
+        self.assertIn("render_full_model_report.py report.md --output report.html", self.skill)
         for content in self.references.values():
             self.assertNotIn("../", content)
             self.assertNotIn("app/", content)

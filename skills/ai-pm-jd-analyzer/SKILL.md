@@ -45,14 +45,25 @@ For a short or vague JD, retain the complete top-level model structure while mar
 
 Write the report in Chinese unless the user requests another language. Follow `references/full-model-report-contract.md` exactly for a default full analysis. For a focused request, retain a conclusion, evidence boundary, and the complete JSON appendix.
 
-## Optional visual delivery
+## Automatic local delivery
 
-When the user explicitly requests a saved visual report and gives an output path, first write the complete Markdown report, then run the bundled local renderer relative to this `SKILL.md`:
+Every default analysis must be persisted locally before replying. Create one new, non-overwriting directory under the caller's current working directory:
+
+```text
+.agents/ai-pm-jd-reports/<unique-run-id>/
+  report.md
+  report.html
+```
+
+1. Generate the complete Markdown report according to the contract and write its exact original content to `report.md`.
+2. Run the bundled local renderer relative to this `SKILL.md`:
 
 ```bash
 python3 <skill-root>/tools/render_full_model_report.py report.md --output report.html
 ```
 
-- This is optional, not part of the default chat/report output. Do not create files unless the user explicitly requests them and identifies an output path.
-- The renderer reads only the report's unique JSON appendix and title summary; it does not call APIs, start services, or read original JD files, prompts, traces, or logs.
-- It refuses to overwrite an existing file unless the user explicitly asks for `--force`.
+3. Reply with the one-sentence conclusion and the two saved paths. Do not repeat the full report in chat after it has been saved.
+
+- The run ID must be unique; never overwrite an existing report directory or file.
+- The renderer reads only `report.md`'s unique JSON appendix and title summary. It does not call APIs, start services, or read original JD files, prompts, traces, or logs.
+- If writing the Markdown file or rendering HTML fails, report the exact local failure. Do not claim that both artifacts were saved.
