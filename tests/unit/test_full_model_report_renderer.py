@@ -183,19 +183,44 @@ class FullModelReportRendererTests(unittest.TestCase):
         ):
             self.assertIn(marker, page)
 
-    def test_model_views_define_muted_semantic_type_tokens(self):
+    def test_model_views_share_distinct_semantic_type_tokens(self):
         payload = renderer.extract_report_payload(self.report)
         page = renderer.build_html(payload, "case_002_jd_full_model_analysis.md")
 
         for marker in (
-            "--role:#5d7881",
-            "--capability:#28736f",
+            "--type-stream:#2f6b57",
+            "--type-work:#556ead",
+            "--type-entity:#b7791f",
+            "--type-capability:#2c7a7b",
+            "--type-role:#7c5a91",
+            "--type-requirement:#a14d67",
+            "--type-stream:#8ac4a8",
+            "--type-work:#aab9ed",
+            "--type-entity:#f0bd69",
+            "--type-capability:#83cfca",
+            "--type-role:#d1b6e1",
+            "--type-requirement:#e6a1b6",
+            "--type-stream-surface:#e8f1ec",
+            "--type-work-surface:#edf0fb",
+            "--type-entity-surface:#fbf3e4",
+            "--type-capability-surface:#e8f4f3",
+            "--type-role-surface:#f4edf7",
+            "--type-role-surface:#34263d",
+            "--type-requirement-surface:#f9edf1",
             ".stream-container",
             ".work-card",
-            ".association-link.role",
+            ".association-link.type-role",
             ".capability-container",
             ".entity-card",
             ".requirement-map",
+            ".detail-link.type-stream",
+            "const elementKinds={",
+            "metric type-${type}",
+            "type-${elementKinds[types[id]] || 'neutral'}",
+            "--report-font-size:13px",
+            "body,body *,body *::before,body *::after { font-size:var(--report-font-size)!important; }",
+            ".graph-zoom-button,.drawer-close,.model-detail-close { font-size:20px!important; }",
+            "rowPitch = {stream:82,work:92,entity:98,capability:98}",
         ):
             self.assertIn(marker, page)
         self.assertNotIn("make('article','role-card')", page)
