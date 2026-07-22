@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """目的：把完整 AI PM JD 元模型报告生成离线、可追溯的可视化 HTML。
 
 定义：skill 随附的纯本地渲染器，消费 Markdown 报告中唯一的 JSON 附录。
