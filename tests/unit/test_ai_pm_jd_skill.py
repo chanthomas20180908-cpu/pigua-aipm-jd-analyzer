@@ -45,6 +45,7 @@ class AiPmJdSkillTests(unittest.TestCase):
         self.assertFalse((SKILL_DIR / "scripts").exists())
         renderer = (SKILL_DIR / "tools" / "render_full_model_report.py").read_text(encoding="utf-8")
         self.assertTrue((SKILL_DIR / "tools" / "README.md").is_file())
+        self.assertTrue(renderer.startswith("#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n"))
         self.assertNotIn("http://", renderer)
         self.assertNotIn("https://", renderer)
         self.assertNotIn("requests", renderer)

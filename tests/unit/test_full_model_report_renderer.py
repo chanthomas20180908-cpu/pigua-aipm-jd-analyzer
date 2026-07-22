@@ -112,6 +112,41 @@ class FullModelReportRendererTests(unittest.TestCase):
         self.assertIn("CRUD 实体：", page)
         self.assertIn("责任分配：", page)
 
+    def test_model_detail_drawer_uses_shared_selection_and_non_modal_close_rules(self):
+        payload = renderer.extract_report_payload(self.report)
+        page = renderer.build_html(payload, "case_002_jd_full_model_analysis.md")
+
+        for marker in (
+            "data-model-detail-trigger",
+            "bindModelDetailTrigger",
+            "clearModelDetailSelection",
+            "closeModelDetail",
+            "event.target.closest('[data-model-detail-trigger]')",
+            "aria-controls",
+            "aria-expanded",
+            "model-detail-selected",
+            "closeDetail(false)",
+            "closeModelDetail(false)",
+            ".model-detail-drawer { display:none!important; }",
+        ):
+            self.assertIn(marker, page)
+
+    def test_model_views_define_muted_semantic_type_tokens(self):
+        payload = renderer.extract_report_payload(self.report)
+        page = renderer.build_html(payload, "case_002_jd_full_model_analysis.md")
+
+        for marker in (
+            "--role:#5d7881",
+            "--capability:#28736f",
+            ".role-card",
+            ".stream-container",
+            ".work-card",
+            ".capability-container",
+            ".entity-card",
+            ".requirement-map",
+        ):
+            self.assertIn(marker, page)
+
     def test_rejects_missing_or_duplicate_json_appendix(self):
         without_heading = self.report.replace("## 结构化模型 JSON", "## 附录", 1)
         with self.assertRaisesRegex(renderer.ReportRenderError, "缺少“结构化模型 JSON”章节"):
