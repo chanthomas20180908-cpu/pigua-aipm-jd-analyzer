@@ -35,9 +35,10 @@ Choose and adapt the order of work to the JD; this is guidance, not a forced pip
 
 1. Separate explicit JD facts, cautious inferences, and not-disclosed fields.
 2. Build every top-level section required by `full-model-schema.json`; mark unavailable fields as `not_disclosed` instead of inventing facts.
-3. Connect value streams, work items, roles, business entities, CRUD operations, capabilities, requirements, environment, compensation, and risks only when evidence supports them.
-4. Validate entity ownership, controlled relationship vocabulary, RACI attribution, and requirement mappings against the rules before writing the report.
-5. Render the Markdown report and its JSON appendix from the same normalized model.
+3. Give every named model node a concise business `description`. Model each business entity as an actionable object; put JD-supported metrics, states, quality dimensions, and costs in that entity's `attributes` instead of promoting them to entities.
+4. Connect value streams, work items, roles, business entities, CRUD operations, capabilities, requirements, environment, compensation, and risks only when evidence supports them. If an explicit metric needs a result object but the JD does not name one, infer the smallest such entity and mark it `inferred`.
+5. Validate entity ownership, reciprocal capability `primary_entity_ids`, controlled relationship vocabulary, RACI attribution, and requirement mappings against the rules before writing the report.
+6. Render the Markdown report and its JSON appendix from the same normalized v2 model.
 
 For a short or vague JD, retain the complete top-level model structure while marking missing fields `not_disclosed` and emphasizing what must be confirmed. Never invent a complete AI lifecycle merely because the title contains AI.
 

@@ -76,8 +76,8 @@ class AiPmJdSkillTests(unittest.TestCase):
             self.assertIn(heading, contract)
 
     def test_full_model_schema_defines_complete_contract_and_controlled_relationships(self):
-        self.assertEqual("AI PM JD Full Reference Meta Model", self.schema["title"])
-        self.assertEqual("ai_pm_jd_full_model/v1", self.schema["properties"]["schema_version"]["const"])
+        self.assertEqual("AI PM JD Full Reference Meta Model v2", self.schema["title"])
+        self.assertEqual("ai_pm_jd_full_model/v2", self.schema["properties"]["schema_version"]["const"])
         required = set(self.schema["required"])
         self.assertTrue(
             {
@@ -88,6 +88,11 @@ class AiPmJdSkillTests(unittest.TestCase):
             } <= required
         )
         definitions = self.schema["$defs"]
+        self.assertIn("description", definitions["item"]["required"])
+        self.assertIn("attributes", definitions["entity"]["required"])
+        self.assertEqual(["name", "description", "evidence"], definitions["attribute"]["required"])
+        self.assertIn("primary_entity_ids", definitions["capability"]["required"])
+        self.assertIn("supported_work_item_ids", definitions["capability"]["required"])
         self.assertEqual(["explicit", "inferred", "not_disclosed"], definitions["status"]["enum"])
         self.assertEqual(
             ["responsible", "accountable", "consulted", "informed"],

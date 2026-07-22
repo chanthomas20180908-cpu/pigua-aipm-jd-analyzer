@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "AI PM JD Full Reference Meta Model",
+  "title": "AI PM JD Full Reference Meta Model v2",
   "type": "object",
   "required": [
     "schema_version", "source", "company_context", "job_profile", "value_streams", "work_items", "roles", "responsibility_assignments", "business_entities", "entity_relationships", "business_capabilities", "capability_relationships", "qualification_requirements", "work_environment", "compensation_benefits", "risks", "uncertainties", "judgment"
   ],
   "properties": {
-    "schema_version": { "const": "ai_pm_jd_full_model/v1" },
+    "schema_version": { "const": "ai_pm_jd_full_model/v2" },
     "source": { "type": "object", "required": ["input_type", "language"], "properties": { "input_type": { "const": "jd" }, "language": { "const": "zh-CN" } } },
     "company_context": { "$ref": "#/$defs/section" },
     "job_profile": { "$ref": "#/$defs/section" },
@@ -28,11 +28,12 @@
   "$defs": {
     "status": { "enum": ["explicit", "inferred", "not_disclosed"] },
     "evidence": { "type": "object", "required": ["status"], "properties": { "status": { "$ref": "#/$defs/status" }, "value": { "type": ["string", "number", "boolean", "null", "array"] }, "snippets": { "type": "array", "items": { "type": "string" } }, "source_ids": { "type": "array", "items": { "type": "string" } }, "inference_basis": { "type": "string" } } },
-    "item": { "type": "object", "required": ["id", "name", "evidence"], "properties": { "id": { "type": "string" }, "name": { "type": "string" }, "description": { "type": "string" }, "evidence": { "$ref": "#/$defs/evidence" } } },
+    "item": { "type": "object", "required": ["id", "name", "description", "evidence"], "properties": { "id": { "type": "string", "minLength": 1 }, "name": { "type": "string", "minLength": 1 }, "description": { "type": "string", "minLength": 1 }, "evidence": { "$ref": "#/$defs/evidence" } } },
     "section": { "type": "object", "required": ["fields"], "properties": { "fields": { "type": "object", "additionalProperties": { "$ref": "#/$defs/evidence" } } } },
     "work_item": { "allOf": [{ "$ref": "#/$defs/item" }], "required": ["value_stream_id", "entity_operations", "capability_ids"], "properties": { "value_stream_id": { "type": "string" }, "entity_operations": { "type": "array", "items": { "type": "object", "required": ["entity_id", "operation", "evidence"], "properties": { "entity_id": { "type": "string" }, "operation": { "enum": ["create", "read", "update", "delete"] }, "evidence": { "$ref": "#/$defs/evidence" } } } }, "capability_ids": { "type": "array", "items": { "type": "string" } } } },
-    "entity": { "allOf": [{ "$ref": "#/$defs/item" }], "required": ["primary_capability_id"], "properties": { "domain": { "enum": ["business", "product", "data_knowledge", "ai_capability", "software_system", "runtime_delivery", "governance_constraint"] }, "abstraction_level": { "enum": ["concept", "type", "specialized_type"] }, "primary_capability_id": { "type": "string" } } },
-    "capability": { "allOf": [{ "$ref": "#/$defs/item" }], "properties": { "category": { "type": "string" }, "supported_work_item_ids": { "type": "array", "items": { "type": "string" } } } },
+    "attribute": { "type": "object", "required": ["name", "description", "evidence"], "properties": { "name": { "type": "string", "minLength": 1 }, "description": { "type": "string", "minLength": 1 }, "evidence": { "$ref": "#/$defs/evidence" } } },
+    "entity": { "allOf": [{ "$ref": "#/$defs/item" }], "required": ["primary_capability_id", "attributes"], "properties": { "domain": { "enum": ["business", "product", "data_knowledge", "ai_capability", "software_system", "runtime_delivery", "governance_constraint"] }, "abstraction_level": { "enum": ["concept", "type", "specialized_type"] }, "primary_capability_id": { "type": "string", "minLength": 1 }, "attributes": { "type": "array", "items": { "$ref": "#/$defs/attribute" } } } },
+    "capability": { "allOf": [{ "$ref": "#/$defs/item" }], "required": ["primary_entity_ids", "supported_work_item_ids"], "properties": { "category": { "type": "string" }, "primary_entity_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }, "supported_work_item_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } } } },
     "requirement": { "allOf": [{ "$ref": "#/$defs/item" }], "required": ["content_category", "necessity", "objectivity", "association_level", "mapping_status"], "properties": { "content_category": { "enum": ["experience", "education", "industry", "knowledge", "skill", "tool", "certificate", "language", "work_style", "location", "other"] }, "necessity": { "enum": ["mandatory", "preferred", "unclear"] }, "objectivity": { "enum": ["objective", "subjective"] }, "association_level": { "enum": ["value_stream", "work_item", "role", "capability", "work_context", "job_entry", "none"] }, "mapping_status": { "enum": ["directly_linked", "indirectly_linked", "unlinked"] }, "mapping_target_ids": { "type": "array", "items": { "type": "string" } } } },
     "raci_relationship": { "type": "object", "required": ["role_id", "work_item_id", "raci", "evidence"], "properties": { "role_id": { "type": "string" }, "work_item_id": { "type": "string" }, "raci": { "enum": ["responsible", "accountable", "consulted", "informed"] }, "evidence": { "$ref": "#/$defs/evidence" } } },
     "entity_relationship": { "type": "object", "required": ["source_id", "target_id", "relation_type", "evidence"], "properties": { "source_id": { "type": "string" }, "target_id": { "type": "string" }, "relation_type": { "enum": ["parent_of", "lifecycle_precedes", "input_to", "related_to"] }, "evidence": { "$ref": "#/$defs/evidence" } } },
