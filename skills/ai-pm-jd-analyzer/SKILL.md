@@ -68,3 +68,13 @@ python3 <skill-root>/tools/render_full_model_report.py report.md --output report
 - The run ID must be unique; never overwrite an existing report directory or file.
 - The renderer reads only `report.md`'s unique JSON appendix and title summary. It does not call APIs, start services, or read original JD files, prompts, traces, or logs.
 - If writing the Markdown file or rendering HTML fails, report the exact local failure. Do not claim that both artifacts were saved.
+
+## Local iteration bootstrap
+
+For maintainers running private Skill iterations in a new linked worktree, initialize a fresh ignored loop instance before adding private cases:
+
+```bash
+python3 <skill-root>/tools/init_local_skill_loop.py
+```
+
+The initializer creates only a sanitized `.agents/skill-loop/` skeleton and refuses to overwrite an existing instance. It does not copy JD inputs, reports, reviews, or histories between worktrees.

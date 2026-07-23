@@ -41,19 +41,23 @@ class AiPmJdSkillTests(unittest.TestCase):
         self.assertIn('display_name: "AI PM JD Analyzer"', self.ui_metadata)
         self.assertIn("$ai-pm-jd-analyzer", self.ui_metadata)
 
-    def test_package_has_only_the_allowed_local_renderer_and_no_remote_dependencies(self):
+    def test_package_has_only_the_allowed_local_tools_and_no_remote_dependencies(self):
         self.assertFalse((SKILL_DIR / "scripts").exists())
         renderer = (SKILL_DIR / "tools" / "render_full_model_report.py").read_text(encoding="utf-8")
+        initializer = (SKILL_DIR / "tools" / "init_local_skill_loop.py").read_text(encoding="utf-8")
         self.assertTrue((SKILL_DIR / "tools" / "README.md").is_file())
+        self.assertTrue((SKILL_DIR / "templates" / "local-skill-loop" / "AGENTS.md").is_file())
         self.assertNotIn("http://", renderer)
         self.assertNotIn("https://", renderer)
         self.assertNotIn("requests", renderer)
+        self.assertNotIn("requests", initializer)
         self.assertIn("Do not browse, call APIs, start this repository's service", self.skill)
         self.assertIn("Automatic local delivery", self.skill)
         self.assertIn(".agents/ai-pm-jd-reports/<unique-run-id>/", self.skill)
         self.assertIn("report.md", self.skill)
         self.assertIn("report.html", self.skill)
         self.assertIn("render_full_model_report.py report.md --output report.html", self.skill)
+        self.assertIn("init_local_skill_loop.py", self.skill)
         for content in self.references.values():
             self.assertNotIn("../", content)
             self.assertNotIn("app/", content)
