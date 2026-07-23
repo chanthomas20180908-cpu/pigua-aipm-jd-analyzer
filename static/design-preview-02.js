@@ -923,8 +923,7 @@ async function loadFrontendSample() {
     const response = await fetch(SAMPLE_FIXTURE_URL, { cache: "no-store" });
     if (!response.ok) throw new Error(`样例 fixture 加载失败（${response.status}）`);
     const data = await response.json();
-    const traceId = data && data._meta ? data._meta.trace_id : "未标注 trace";
-    sampleBannerDetail.textContent = `来源 trace：${traceId} · 使用生产渲染器 · 不调用 LLM。`;
+    sampleBannerDetail.textContent = "使用脱敏冻结样例 · 生产渲染器 · 不调用 LLM。";
     resultResetButton.textContent = "返回分析首页";
     renderResult(data, { saveHistory: false });
   } catch (error) {

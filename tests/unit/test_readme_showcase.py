@@ -10,11 +10,12 @@ SHOWCASE_DIR = ROOT / "static" / "assets" / "readme-showcase"
 
 
 class ReadmeShowcaseTests(unittest.TestCase):
-    def test_readme_references_lightweight_graph_assets(self):
+    def test_readme_references_product_showcase_assets(self):
         content = README.read_text(encoding="utf-8")
         assets = {
-            "graph-focus.svg": 20_000,
-            "graph-full.svg": 20_000,
+            "hero-result.webp": 400_000,
+            "flow-view.webp": 350_000,
+            "product-flow.gif": 2_500_000,
         }
 
         for filename, byte_budget in assets.items():
@@ -32,6 +33,10 @@ class ReadmeShowcaseTests(unittest.TestCase):
             "脱敏冻结样例",
             "不调用 LLM",
             "不是简历匹配或投递建议工具",
+            "两种使用方式",
+            "Agent Skill",
+            "Web 工具",
+            "make dev",
             "不包含真实 JD、简历、评测原始数据",
         ):
             self.assertIn(marker, content)
