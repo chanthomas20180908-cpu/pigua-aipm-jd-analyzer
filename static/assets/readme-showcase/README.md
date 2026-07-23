@@ -6,6 +6,7 @@
 - `hero-result.webp`：`/sample` 的结果页和关系图主视觉，≤ 400 KB。
 - `graph-focus.svg`：一条真实分析路径的局部图谱，优先保证手机端可读性。
 - `graph-full.svg`：同一冻结样例的完整岗位关系图。
+- `../hero-screenshot.png`：原版 README 的九宫格卡皮巴拉品牌视觉，≤ 1.5 MB。
 
 截图以 1440px 桌面视口采集；两张 SVG 直接用于 README，以保持文字清晰并控制扫码后的首次
 加载体积。页面不嵌入 GIF，避免下载和解码拖慢首屏。

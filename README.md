@@ -14,6 +14,8 @@
 
 [![CI](https://github.com/chanthomas20180908-cpu/pigua-aipm-jd-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/chanthomas20180908-cpu/pigua-aipm-jd-analyzer/actions/workflows/ci.yml)
 
+![劈瓜项目预览：九宫格卡皮巴拉](static/assets/hero-screenshot.png)
+
 ## 这不是关键词云，是一张可操作的岗位地图
 
 ![劈瓜冻结样例结果页：岗位结论、关系图和结构化判断](static/assets/readme-showcase/hero-result.webp)
@@ -43,6 +45,22 @@
 - **岗位判断**：AI 含量、权责边界、协作复杂度、交付节奏、数据要求和隐性风险；
 - **面试抓手**：把模糊的招聘话术转成可核验的问题。
 
+## 我做了什么
+
+- **定义问题与元模型**：用价值流、工作事项、业务实体、能力与风险组织 JD，而不是堆叠标签。
+- **设计分析工作流**：构建“建模分析 → 质量检查 → 口语化总结”的 v4 模块化 LLM 流程。
+- **把判断做成可见的产品**：实现 D3 关系图、流程图、CRUD 矩阵、结果导出与本地历史记录。
+- **建立可验证闭环**：用冻结前端样例、公开边界检查和离线 Evaluator–Optimizer Loop 保护迭代质量。
+
+## 工程实现与验证边界
+
+- **双轨评测机制**：离线 Evaluator–Optimizer Loop 支持将回归集与能力集分开评估，并用回归保护避免能力爬坡掩盖退化；公开仓库不包含私有评测数据。
+- **产品化链路**：提供 FastAPI 服务、JSON / Markdown 结果导出、`.txt` / `.md` / `.docx` 输入、本地 `make ci` 与冻结的 `/sample` 前端验收样例。
+- **历史 MVP 回归实验**：旧私有原型的 5-case 回归 run 将 `element_modeling` 最佳 score 从 **0.9333 提升到 0.9500**，且无 timeout 或执行失败。
+- `make ci` 先执行公开边界检查，再运行编译与单元测试；真实输入、密钥、日志和本机路径不能进入 Git 跟踪文件。
+
+上述历史实验不是模型准确率、线上用户效果或商业指标，也不代表当前公开提交可复现相同分数；完整限定见[脱敏验证摘要](HISTORICAL_MVP_VALIDATION.md)。
+
 ## 两种使用方式
 
 ### Agent Skill
@@ -65,9 +83,16 @@ $ai-pm-jd-analyzer
 
 它会输出岗位业务模型、明确事实与谨慎推断、风险判断和面试核验问题；不做简历匹配、投递建议或公司联网调研。
 
+#### Skill 能做什么
+
+- 将 JD 拆解为价值流、工作事项、业务实体、能力与角色责任。
+- 区分明确事实、谨慎推断和未披露信息，避免根据职位名称臆测完整 AI 生命周期。
+- 识别伪 AI、职责失衡、责任甩锅和关键边界缺失等风险。
+- 用户明确指定输出路径时，生成不依赖网络的完整元模型图谱报告。
+
 ### Web 工具
 
-适合体验图谱、结构化判断与导出。支持粘贴文本或上传 `.txt` / `.md` / `.docx`（最大 500 KB）。
+仓库同时包含 FastAPI + D3.js 的产品化探索，适合体验图谱、结构化判断与导出。支持粘贴文本或上传 `.txt` / `.md` / `.docx`（最大 500 KB）。
 
 ```bash
 python3 -m pip install -r requirements.txt
@@ -77,23 +102,16 @@ make dev
 - 打开 `http://127.0.0.1:8000` 使用真实 JD 分析；需要通过本地环境变量自行配置 API Key。
 - 打开 `http://127.0.0.1:8000/sample` 查看冻结验收样例；不调用 LLM，也不写浏览器历史。
 
-## 我做了什么
+## 公开仓库边界
 
-- **定义问题与元模型**：用价值流、工作事项、业务实体、能力与风险组织 JD，而不是堆叠标签。
-- **设计分析工作流**：构建“建模分析 → 质量检查 → 口语化总结”的 v4 模块化 LLM 流程。
-- **把判断做成可见的产品**：实现 D3 关系图、流程图、CRUD 矩阵、结果导出与本地历史记录。
-- **建立可验证闭环**：用冻结前端样例、公开边界检查和离线 Evaluator–Optimizer Loop 保护迭代质量。
-
-## 工程可信度与边界
-
-- FastAPI 提供服务与静态页面；HTML / CSS / 原生 JavaScript + D3.js 完成前端可视化。
-- `make ci` 先执行公开边界检查，再运行编译与单元测试；真实输入、密钥、日志和本机路径不能进入 Git 跟踪文件。
-- 历史 MVP 的 5-case 回归 run 曾将 `element_modeling` 最佳 score 从 **0.9333** 提升到 **0.9500**，无 timeout 或执行失败。
+- [AGENTS.md](AGENTS.md) 是公开仓库的协作、分支、PR、worktree 与私有材料边界规则；[CLAUDE.md](CLAUDE.md) 提供 Claude Code 的最小执行入口。
+- 本仓库是唯一日常代码仓库，只配置一个公开 `origin`；历史私有仓库只作归档，禁止作为新功能开发或新增远端。
+- 不包含运行日志、真实 JD / 简历、评测原始数据、内部文档或 Agent 上下文；API Key 仅通过本地环境变量注入。
 
 <details>
 <summary><strong>查看验证口径与公开边界</strong></summary>
 
-- 该历史结果来自旧私有原型的历史回归摘要，未包含 capability 集，不能视为模型准确率、用户效果或商业指标；完整限定见[脱敏验证摘要](HISTORICAL_MVP_VALIDATION.md)。
+- 该历史结果未包含 capability 集，不能视为双轨 combined score。
 - 公开仓库不包含真实 JD、简历、评测原始数据、运行日志、内部文档或密钥。协作和安全规则见 [AGENTS.md](AGENTS.md)。
 
 </details>

@@ -7,6 +7,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 README = ROOT / "README.md"
 SHOWCASE_DIR = ROOT / "static" / "assets" / "readme-showcase"
+CLASSIC_HERO = ROOT / "static" / "assets" / "hero-screenshot.png"
 
 
 class ReadmeShowcaseTests(unittest.TestCase):
@@ -24,7 +25,9 @@ class ReadmeShowcaseTests(unittest.TestCase):
             self.assertTrue(asset.is_file())
             self.assertLessEqual(asset.stat().st_size, byte_budget)
 
-        self.assertNotIn("hero-screenshot.png", content)
+        self.assertIn("static/assets/hero-screenshot.png", content)
+        self.assertTrue(CLASSIC_HERO.is_file())
+        self.assertLessEqual(CLASSIC_HERO.stat().st_size, 1_500_000)
         self.assertNotIn("product-flow.gif", content)
         self.assertNotIn("flow-view.webp", content)
 
