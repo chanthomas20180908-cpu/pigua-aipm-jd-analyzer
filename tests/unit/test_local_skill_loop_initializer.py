@@ -18,6 +18,9 @@ SPEC.loader.exec_module(initializer)
 
 
 class LocalSkillLoopInitializerTests(unittest.TestCase):
+    def test_current_checkout_ignores_the_loop_instance_path(self):
+        initializer._assert_agents_ignored(ROOT)
+
     def test_creates_an_empty_private_loop_instance(self):
         with tempfile.TemporaryDirectory() as temporary_dir:
             root = Path(temporary_dir)

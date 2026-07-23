@@ -59,7 +59,7 @@ def inspect_workspace(root: Path) -> Workspace:
 
 def _assert_agents_ignored(root: Path) -> None:
     completed = subprocess.run(
-        ["git", "check-ignore", "-q", ".agents"], cwd=root, check=False
+        ["git", "check-ignore", "-q", ".agents/skill-loop"], cwd=root, check=False
     )
     if completed.returncode:
         raise InitializationError(".agents/ must be ignored before creating a local loop instance.")
