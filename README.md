@@ -48,6 +48,16 @@ cp -R skills/ai-pm-jd-analyzer ~/.claude/skills/
 $ai-pm-jd-analyzer
 ```
 
+### 本地 Skill 迭代
+
+需要在新 linked worktree 中用私有 JD 迭代 Skill 时，先初始化被 Git 忽略的本地 loop 骨架：
+
+```bash
+python3 skills/ai-pm-jd-analyzer/tools/init_local_skill_loop.py
+```
+
+该命令只复制脱敏流程模板、状态和单 case 执行指令；真实 JD、报告、人工评价与 round 记录仍只留在 `.agents/`，不会进入 commit 或远端。
+
 ## Skill 能做什么
 
 - 将 JD 拆解为价值流、工作事项、业务实体、能力与角色责任。
