@@ -41,15 +41,24 @@ class AiPmJdSkillTests(unittest.TestCase):
         self.assertIn('display_name: "AI PM JD Analyzer"', self.ui_metadata)
         self.assertIn("$ai-pm-jd-analyzer", self.ui_metadata)
 
-    def test_package_has_only_the_allowed_local_renderer_and_no_remote_dependencies(self):
+    def test_package_has_only_the_allowed_local_tools_and_no_remote_dependencies(self):
         self.assertFalse((SKILL_DIR / "scripts").exists())
         renderer = (SKILL_DIR / "tools" / "render_full_model_report.py").read_text(encoding="utf-8")
+        initializer = (SKILL_DIR / "tools" / "init_local_skill_loop.py").read_text(encoding="utf-8")
         self.assertTrue((SKILL_DIR / "tools" / "README.md").is_file())
+        self.assertTrue((SKILL_DIR / "templates" / "local-skill-loop" / "AGENTS.md").is_file())
+        self.assertTrue((SKILL_DIR / "templates" / "local-skill-loop" / "loop-context.md").is_file())
         self.assertNotIn("http://", renderer)
         self.assertNotIn("https://", renderer)
         self.assertNotIn("requests", renderer)
+        self.assertNotIn("requests", initializer)
         self.assertIn("Do not browse, call APIs, start this repository's service", self.skill)
-        self.assertIn("Optional visual delivery", self.skill)
+        self.assertIn("Automatic local delivery", self.skill)
+        self.assertIn(".agents/ai-pm-jd-reports/<unique-run-id>/", self.skill)
+        self.assertIn("report.md", self.skill)
+        self.assertIn("report.html", self.skill)
+        self.assertIn("render_full_model_report.py report.md --output report.html", self.skill)
+        self.assertIn("init_local_skill_loop.py", self.skill)
         for content in self.references.values():
             self.assertNotIn("../", content)
             self.assertNotIn("app/", content)
@@ -72,8 +81,8 @@ class AiPmJdSkillTests(unittest.TestCase):
             self.assertIn(heading, contract)
 
     def test_full_model_schema_defines_complete_contract_and_controlled_relationships(self):
-        self.assertEqual("AI PM JD Full Reference Meta Model", self.schema["title"])
-        self.assertEqual("ai_pm_jd_full_model/v1", self.schema["properties"]["schema_version"]["const"])
+        self.assertEqual("AI PM JD Full Reference Meta Model v2", self.schema["title"])
+        self.assertEqual("ai_pm_jd_full_model/v2", self.schema["properties"]["schema_version"]["const"])
         required = set(self.schema["required"])
         self.assertTrue(
             {
@@ -84,6 +93,11 @@ class AiPmJdSkillTests(unittest.TestCase):
             } <= required
         )
         definitions = self.schema["$defs"]
+        self.assertIn("description", definitions["item"]["required"])
+        self.assertIn("attributes", definitions["entity"]["required"])
+        self.assertEqual(["name", "description", "evidence"], definitions["attribute"]["required"])
+        self.assertIn("primary_entity_ids", definitions["capability"]["required"])
+        self.assertIn("supported_work_item_ids", definitions["capability"]["required"])
         self.assertEqual(["explicit", "inferred", "not_disclosed"], definitions["status"]["enum"])
         self.assertEqual(
             ["responsible", "accountable", "consulted", "informed"],

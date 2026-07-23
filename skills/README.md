@@ -26,6 +26,7 @@
 ## 范围包括
 
 - Skill 的 `SKILL.md`、`agents/` 元数据、`references/` 与本地辅助工具。
+- 可复用、脱敏的本地实验模板；真实实验实例仍在各 worktree 的忽略 `.agents/` 目录。
 - 同时面向 Codex 与 Claude Code 的可复制 Skill 源包。
 
 ## 范围不包括
