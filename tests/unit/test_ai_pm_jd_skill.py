@@ -47,6 +47,7 @@ class AiPmJdSkillTests(unittest.TestCase):
         initializer = (SKILL_DIR / "tools" / "init_local_skill_loop.py").read_text(encoding="utf-8")
         self.assertTrue((SKILL_DIR / "tools" / "README.md").is_file())
         self.assertTrue((SKILL_DIR / "templates" / "local-skill-loop" / "AGENTS.md").is_file())
+        self.assertTrue((SKILL_DIR / "templates" / "local-skill-loop" / "loop-context.md").is_file())
         self.assertNotIn("http://", renderer)
         self.assertNotIn("https://", renderer)
         self.assertNotIn("requests", renderer)
