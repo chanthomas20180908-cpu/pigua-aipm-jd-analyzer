@@ -14,8 +14,8 @@ class ReadmeShowcaseTests(unittest.TestCase):
         content = README.read_text(encoding="utf-8")
         assets = {
             "hero-result.webp": 400_000,
-            "flow-view.webp": 350_000,
-            "product-flow.gif": 2_500_000,
+            "graph-focus.svg": 50_000,
+            "graph-full.svg": 50_000,
         }
 
         for filename, byte_budget in assets.items():
@@ -25,6 +25,8 @@ class ReadmeShowcaseTests(unittest.TestCase):
             self.assertLessEqual(asset.stat().st_size, byte_budget)
 
         self.assertNotIn("hero-screenshot.png", content)
+        self.assertNotIn("product-flow.gif", content)
+        self.assertNotIn("flow-view.webp", content)
 
     def test_readme_preserves_showcase_disclosure_and_boundaries(self):
         content = README.read_text(encoding="utf-8")
