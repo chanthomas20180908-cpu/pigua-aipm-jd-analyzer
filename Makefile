@@ -42,5 +42,7 @@ test: compile
 	$(PYTHON) -m unittest tests.unit.test_frontend_structure -v
 	$(PYTHON) -m unittest tests.unit.test_frontend_sample_extractor -v
 	$(PYTHON) -m unittest tests.unit.test_ai_pm_jd_skill -v
+	$(PYTHON) -m unittest tests.unit.test_full_model_report_renderer -v
+	$(PYTHON) -m unittest tests.unit.test_local_skill_loop_initializer -v
 
 ci: boundary test

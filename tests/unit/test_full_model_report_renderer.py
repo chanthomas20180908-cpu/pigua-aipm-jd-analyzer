@@ -26,6 +26,57 @@ sys.modules[SPEC.name] = renderer
 SPEC.loader.exec_module(renderer)
 
 
+def item(item_id: str, name: str) -> dict:
+    return {"id": item_id, "name": name, "evidence": {"status": "explicit"}}
+
+
+SAMPLE_MODEL = {
+    "schema_version": "ai_pm_jd_full_model/v1",
+    "source": {"input_type": "jd", "language": "zh-CN"},
+    "company_context": {"fields": {}},
+    "job_profile": {"fields": {}},
+    "value_streams": [item("stream-1", "场景交付")],
+    "work_items": [
+        {
+            **item("work-1", "设计交付方案"),
+            "value_stream_id": "stream-1",
+            "entity_operations": [
+                {"entity_id": "entity-1", "operation": "create", "evidence": {"status": "explicit"}}
+            ],
+            "capability_ids": ["capability-1"],
+        }
+    ],
+    "roles": [item("role-1", "产品交付负责人")],
+    "responsibility_assignments": [
+        {"role_id": "role-1", "work_item_id": "work-1", "raci": "responsible", "evidence": {"status": "explicit"}}
+    ],
+    "business_entities": [{**item("entity-1", "交付方案"), "primary_capability_id": "capability-1"}],
+    "entity_relationships": [],
+    "business_capabilities": [{**item("capability-1", "方案设计"), "supported_work_item_ids": ["work-1"]}],
+    "capability_relationships": [],
+    "qualification_requirements": [
+        {
+            **item("requirement-1", "产品经验"),
+            "content_category": "experience",
+            "necessity": "mandatory",
+            "objectivity": "objective",
+            "association_level": "work_item",
+            "mapping_status": "directly_linked",
+            "mapping_target_ids": ["work-1"],
+        }
+    ],
+    "work_environment": {"fields": {}},
+    "compensation_benefits": {"fields": {}},
+    "risks": [item("risk-1", "交付风险")],
+    "uncertainties": [item("uncertainty-1", "职责边界")],
+    "judgment": {"fields": {}},
+}
+
+SAMPLE_REPORT = "# 匿名完整元模型报告\n\n用于渲染器单测的公开匿名模型。\n\n## 结构化模型 JSON\n\n```json\n" + json.dumps(
+    SAMPLE_MODEL, ensure_ascii=False
+) + "\n```\n"
+
+
 class FullModelReportRendererTests(unittest.TestCase):
     """Protect the portable report renderer against malformed or unsafe source reports."""
 
@@ -58,7 +109,7 @@ class FullModelReportRendererTests(unittest.TestCase):
         }
         return "# 合成完整元模型报告\n\n结论：用于验证本地渲染器。\n\n## 结构化模型 JSON\n\n```json\n" + json.dumps(model, ensure_ascii=False) + "\n```\n"
 
-    def test_extracts_case_002_and_renders_required_model_sections(self):
+    def test_extracts_v2_model_and_renders_required_model_sections(self):
         payload = renderer.extract_report_payload(self.report)
         self.assertEqual("ai_pm_jd_full_model/v2", payload.model["schema_version"])
         self.assertEqual(1, len(payload.model["value_streams"]))
@@ -90,7 +141,6 @@ class FullModelReportRendererTests(unittest.TestCase):
             "value-stream-view",
             "capability-view",
             "requirement-view",
-            "roles-rail",
             "requirement-board",
             "capability-relations",
             "entity-relations",
@@ -99,6 +149,7 @@ class FullModelReportRendererTests(unittest.TestCase):
             "岗位准入条件",
         ):
             self.assertIn(marker, page)
+        self.assertNotIn("roles-rail", page)
         self.assertNotIn("cdn.jsdelivr", page)
         self.assertNotIn("滚轮缩放", page)
 
@@ -123,7 +174,6 @@ class FullModelReportRendererTests(unittest.TestCase):
         self.assertIn("targetView", page)
         self.assertIn("renderRequirements", page)
         self.assertIn("stayInView", page)
-        self.assertIn("JD 未建模出角色责任分配。", page)
         self.assertIn("JD 未建模出任职要求。", page)
 
     def test_keeps_contextual_links_in_their_origin_view_and_separates_requirements(self):
@@ -135,8 +185,72 @@ class FullModelReportRendererTests(unittest.TestCase):
         self.assertIn("link(work.id,work.name,'',true)", page)
         self.assertIn("'crud',true", page)
         self.assertIn("'capability',true", page)
+        self.assertIn("'role',true", page)
         self.assertIn("CRUD 实体：", page)
         self.assertIn("责任分配：", page)
+        self.assertIn("association('执行角色'", page)
+        self.assertIn("JD 未明确执行角色。", page)
+
+    def test_model_detail_drawer_uses_shared_selection_and_non_modal_close_rules(self):
+        payload = renderer.extract_report_payload(self.report)
+        page = renderer.build_html(payload, "case_002_jd_full_model_analysis.md")
+
+        for marker in (
+            "data-model-detail-trigger",
+            "bindModelDetailTrigger",
+            "clearModelDetailSelection",
+            "closeModelDetail",
+            "event.target.closest('[data-model-detail-trigger]')",
+            "aria-controls",
+            "aria-expanded",
+            "model-detail-selected",
+            "closeDetail(false)",
+            "closeModelDetail(false)",
+            ".model-detail-drawer { display:none!important; }",
+        ):
+            self.assertIn(marker, page)
+
+    def test_model_views_share_distinct_semantic_type_tokens(self):
+        payload = renderer.extract_report_payload(self.report)
+        page = renderer.build_html(payload, "case_002_jd_full_model_analysis.md")
+
+        for marker in (
+            "--type-stream:#2f6b57",
+            "--type-work:#556ead",
+            "--type-entity:#b7791f",
+            "--type-capability:#2c7a7b",
+            "--type-role:#7c5a91",
+            "--type-requirement:#a14d67",
+            "--type-stream:#8ac4a8",
+            "--type-work:#aab9ed",
+            "--type-entity:#f0bd69",
+            "--type-capability:#83cfca",
+            "--type-role:#d1b6e1",
+            "--type-requirement:#e6a1b6",
+            "--type-stream-surface:#e8f1ec",
+            "--type-work-surface:#edf0fb",
+            "--type-entity-surface:#fbf3e4",
+            "--type-capability-surface:#e8f4f3",
+            "--type-role-surface:#f4edf7",
+            "--type-role-surface:#34263d",
+            "--type-requirement-surface:#f9edf1",
+            ".stream-container",
+            ".work-card",
+            ".association-link.type-role",
+            ".capability-container",
+            ".entity-card",
+            ".requirement-map",
+            ".detail-link.type-stream",
+            "const elementKinds={",
+            "metric type-${type}",
+            "type-${elementKinds[types[id]] || 'neutral'}",
+            "--report-font-size:13px",
+            "body,body *,body *::before,body *::after { font-size:var(--report-font-size)!important; }",
+            ".graph-zoom-button,.drawer-close,.model-detail-close { font-size:20px!important; }",
+            "rowPitch = {stream:82,work:92,entity:98,capability:98}",
+        ):
+            self.assertIn(marker, page)
+        self.assertNotIn("make('article','role-card')", page)
 
     def test_rejects_missing_or_duplicate_json_appendix(self):
         without_heading = self.report.replace("## 结构化模型 JSON", "## 附录", 1)

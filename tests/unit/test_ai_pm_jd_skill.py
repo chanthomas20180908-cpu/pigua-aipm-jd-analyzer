@@ -48,6 +48,7 @@ class AiPmJdSkillTests(unittest.TestCase):
         self.assertTrue((SKILL_DIR / "tools" / "README.md").is_file())
         self.assertTrue((SKILL_DIR / "templates" / "local-skill-loop" / "AGENTS.md").is_file())
         self.assertTrue((SKILL_DIR / "templates" / "local-skill-loop" / "loop-context.md").is_file())
+        self.assertTrue(renderer.startswith("#!/usr/bin/env python3\n# -*- coding: utf-8 -*-\n"))
         self.assertNotIn("http://", renderer)
         self.assertNotIn("https://", renderer)
         self.assertNotIn("requests", renderer)
