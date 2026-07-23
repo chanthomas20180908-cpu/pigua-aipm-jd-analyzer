@@ -14,7 +14,7 @@
 
 [![CI](https://github.com/chanthomas20180908-cpu/pigua-aipm-jd-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/chanthomas20180908-cpu/pigua-aipm-jd-analyzer/actions/workflows/ci.yml)
 
-![劈瓜项目预览：九宫格卡皮巴拉](static/assets/hero-screenshot.png)
+![劈瓜项目预览：九宫格卡皮巴拉](static/assets/hero-screenshot.webp)
 
 ## 这不是关键词云，是一张可操作的岗位地图
 
