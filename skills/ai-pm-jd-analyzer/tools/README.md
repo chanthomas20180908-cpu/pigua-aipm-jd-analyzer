@@ -37,6 +37,7 @@ python3 /path/to/ai-pm-jd-analyzer/tools/render_full_model_report.py \
 ```
 
 - Skill 默认将 `report.md` 与 `report.html` 保存到调用目录的 `.agents/ai-pm-jd-reports/<unique-run-id>/`；已有文件不得覆盖。
+- 该目录仅用于本机交付，必须保持 Git 忽略；其中的报告、来源链接和任何私有输入均不得提交或推送。
 - 输入 Markdown 必须含有“结构化模型 JSON”章节下唯一的 `json` fenced block。
 - HTML 默认链接回输入 Markdown 的相对路径；移动其中一个文件时应一并移动另一个。
 
