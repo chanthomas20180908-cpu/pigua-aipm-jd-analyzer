@@ -28,6 +28,10 @@
 
 离线 Evaluator–Optimizer Loop 只能使用本机私有输入运行。`loop/<run-id>` 及 run worktree 仅是本地实验产物，不得推送。实验结论需要进入公开代码时，只提取最小且不含私有数据的 prompt/code delta，放入新的 `feat/*` 分支并走完整 CI/PR。
 
+进行本机私有实验前，如存在本地忽略的 Agent 指引，必须先读取其有效 `AGENTS.md`；该指引可补充实验协议，但不得放宽本文件的公开边界、Git 安全或数据保护规则。
+
+新 linked worktree 进行 Skill loop 时，先运行 `python3 skills/ai-pm-jd-analyzer/tools/init_local_skill_loop.py`。该工具从公开、脱敏模板创建 `.agents/skill-loop/` 本地实例；真实 JD、报告、评价、状态和 round 记录保持忽略，不得通过 Git 在 worktree 或分支之间传递。需要保留实验历史时，在移除 worktree 前手动复制 `.agents/` 到本机私有位置。
+
 ## Public Boundary Gate
 
 `make ci` 会先执行 `scripts/verify_public_boundary.py`。已跟踪文件不得位于 `data/`、`docs/`、`logs/`、`workbench/`、`.agents/` 或 `.worktrees/`，也不得包含实际 API key、私钥或本机绝对路径。

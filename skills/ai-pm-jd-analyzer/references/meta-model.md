@@ -31,13 +31,15 @@
 
 - 岗位承担角色；角色以 `responsible`、`accountable`、`consulted` 或 `informed` 参与工作事项。
 - 价值流包含有序工作事项；工作事项对业务实体执行 CRUD，并依赖业务能力。
-- 每个业务实体只能归属一个 `primary_capability_id`。
+- 每个业务实体只能归属一个 `primary_capability_id`；该能力的 `primary_entity_ids` 必须反向列出该实体，形成唯一、双向可校验的主归属关系。
 - 实体关系只可使用 `parent_of`、`lifecycle_precedes`、`input_to`、`related_to`；能力关系只可使用 `depends_on`。
 - 任职要求可直接证明事项、支撑能力、适用于角色或环境、约束岗位；工作环境影响事项和要求。
 - 风险由元素或关系异常推导，必须区分事实、推断与待确认项。
 
 ## 业务实体与能力
 
-业务实体只能归入一个域：`business`、`product`、`data_knowledge`、`ai_capability`、`software_system`、`runtime_delivery` 或 `governance_constraint`。实体抽象层级为 `concept`、`type` 或 `specialized_type`。
+业务实体只能归入一个域：`business`、`product`、`data_knowledge`、`ai_capability`、`software_system`、`runtime_delivery` 或 `governance_constraint`。实体抽象层级为 `concept`、`type` 或 `specialized_type`。每个具名模型节点都必须包含业务 `description`，说明它是什么、解决什么业务问题或稳定承担什么职责。
 
-业务能力使用以下 11 类作为分类，而非把工具名、人格词或一次性动作当能力：业务场景管理、需求管理、产品方案管理、AI 能力设计与管理、数据与知识管理、AI 评测与质量管理、产品研发与交付管理、产品运营与迭代管理、项目与组织协同管理、行业业务与合规管理、AI 技术洞察与能力规划。
+实体的 `attributes` 是 JD 已明确或可谨慎推断的业务属性，不是完整的数据表字段字典。属性用于保留 JD 中的指标、状态和质量维度，并约束实体粒度：完成率、准确率、成本、质量等可衡量特征通常属于某个评测、运营或交付结果实体的属性，而不是独立业务实体。
+
+业务能力使用以下 11 类作为分类，而非把工具名、人格词或一次性动作当能力：业务场景管理、需求管理、产品方案管理、AI 能力设计与管理、数据与知识管理、AI 评测与质量管理、产品研发与交付管理、产品运营与迭代管理、项目与组织协同管理、行业业务与合规管理、AI 技术洞察与能力规划。每项输出能力必须通过 `primary_entity_ids` 管理至少一个业务实体，并通过 `supported_work_item_ids` 支撑至少一个工作事项。

@@ -12,6 +12,6 @@
 2. 从 `origin/main` 建立 `feat/*`、`fix/*` 或 `chore/*` worktree；不在 `main` 直接开发。
 3. 修改后运行 `make ci`；后端改动额外检查 `/health`，结果页改动检查 `/sample`。
 4. 仅推送功能分支并通过 PR squash merge 到 `main`；禁止日常推送 `main`、强推、`reset --hard`、`clean` 和批量删除。
-5. 私有 JD、golden、日志、workbench、内部文档、密钥和本机绝对路径不得进入 Git。离线 Loop 只在本机运行，结果以最小公开代码改动进入新的 `feat/*` 分支。
+5. 私有 JD、golden、日志、workbench、内部文档、密钥和本机绝对路径不得进入 Git。离线 Loop 只在本机运行；新 linked worktree 先运行 `python3 skills/ai-pm-jd-analyzer/tools/init_local_skill_loop.py` 创建忽略的本地实例，结果以最小公开代码改动进入新的 `feat/*` 分支。
 
 完整规则、公开边界和回退约束见 [AGENTS.md](AGENTS.md)。
