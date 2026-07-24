@@ -82,6 +82,7 @@ class FrontendStructureTests(unittest.TestCase):
             "sample-banner",
         ):
             self.assertIn(marker, self.main + self.html + self.javascript)
+        self.assertNotIn("来源 trace", self.javascript)
 
     def test_fixture_is_complete_and_has_no_llm_debug_content(self):
         self.assertTrue(
