@@ -44,5 +44,6 @@ test: compile
 	$(PYTHON) -m unittest tests.unit.test_ai_pm_jd_skill -v
 	$(PYTHON) -m unittest tests.unit.test_full_model_report_renderer -v
 	$(PYTHON) -m unittest tests.unit.test_local_skill_loop_initializer -v
+	$(PYTHON) -m unittest tests.unit.test_readme_showcase -v
 
 ci: boundary test
