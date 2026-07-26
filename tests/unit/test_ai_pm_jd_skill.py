@@ -17,6 +17,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 SKILL_DIR = ROOT / "skills" / "ai-pm-jd-analyzer"
+SKILLMD_DISTRIBUTION_FILE = ROOT / "distribution" / "skillmd-ai-pm-jd-analyzer.md"
 
 
 class AiPmJdSkillTests(unittest.TestCase):
@@ -113,6 +114,17 @@ class AiPmJdSkillTests(unittest.TestCase):
             definitions["capability_relationship"]["properties"]["relation_type"]["const"],
         )
         self.assertIn("primary_capability_id", definitions["entity"]["required"])
+
+    def test_skillmd_distribution_is_a_single_file_and_declares_its_scope(self):
+        distribution = SKILLMD_DISTRIBUTION_FILE.read_text(encoding="utf-8")
+        self.assertTrue(distribution.startswith("---\nname: ai-pm-jd-analyzer\n"))
+        self.assertIn("standalone distribution edition", distribution)
+        self.assertIn("https://github.com/chanthomas20180908-cpu/pigua-aipm-jd-analyzer", distribution)
+        self.assertIn("does not create local files", distribution)
+        self.assertIn("does not require bundled references", distribution)
+        self.assertNotIn("references/", distribution)
+        self.assertNotIn("render_full_model_report.py", distribution)
+        self.assertNotIn(".agents/", distribution)
 
 
 if __name__ == "__main__":
