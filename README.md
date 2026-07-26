@@ -105,6 +105,10 @@ cp -R skills/ai-pm-jd-analyzer ~/.claude/skills/
 $ai-pm-jd-analyzer
 ```
 
+### SkillMD 单文件分发版
+
+SkillMD 的下载包只支持单个 `SKILL.md`，不能携带本 Skill 的引用模型和本地渲染工具。用于该渠道的可独立运行版本位于 [distribution/skillmd-ai-pm-jd-analyzer.md](distribution/skillmd-ai-pm-jd-analyzer.md)：它交付紧凑的证据优先 JD 分析，不会创建本地文件；需要完整 JSON 附录、HTML 图谱和本地报告时，请从本仓库安装完整版本。
+
 ### 本地 Skill 迭代
 
 需要在新 linked worktree 中用私有 JD 迭代 Skill 时，先初始化被 Git 忽略的本地 loop 骨架：
