@@ -24,6 +24,19 @@
 
 禁止日常 `git push origin main`、强推、`git reset --hard`、`git clean`、批量删除分支或 worktree。所有 Git 写操作、推送、PR 创建和远端合并前均需说明目标、影响范围和原因。
 
+## Browser CDP Operation
+
+用户明确说“直接操作浏览器”、要求提交网页表单，或要求操作已登录网站时，使用 Chrome CDP；这不是桌面鼠标控制，也不会扩大用户对外部动作的授权范围。
+
+1. 先读取 `web-access` Skill。以宿主机权限运行 `bash ~/.claude/skills/web-access/scripts/check-deps.sh`，再使用 `curl --noproxy '*'` 访问本地代理 `http://127.0.0.1:3456`。不要因为 sandbox 中端口不可达而要求用户提供新的端点。
+2. 优先用 `GET /health` 验证代理。若代理不可达，以宿主机权限启动 `node ~/.claude/skills/web-access/scripts/cdp-proxy.mjs` 并复用已有实例；不得强制停止已有代理。
+3. 只用 `GET /new?url=...` 创建并操作自己的后台标签页。不要枚举、读取、点击或关闭用户已有标签页；目标失效时新建自己的标签页，不用 `/targets` 探查用户页面。
+4. 只读取完成当前任务所需的目标页公开可见内容。不得读取、导出或复述 Cookie、localStorage、sessionStorage、密码、自动填充数据或其他站点数据；不使用桌面鼠标或键盘控制。
+5. 对登录、授权、提交、发布、删除、购买、发帖等外部效果动作，仍须先给出“目标 / 影响 / 原因”三行预告。创建后台页、仅读公开页面元数据和关闭自己创建的页也要说明动作范围。
+6. `POST /eval?target=<targetId>` 的请求体必须是原始 JavaScript 表达式，并且只返回可序列化值；不要发送 JSON 包装、DOM 节点或从其他页面复制的固定选择器。
+7. `/eval` 返回 400 时，不要用 `curl -f` 隐藏响应，也不要把它误判为目标网站拒绝。先读取代理错误体，核对当前 `targetId` 和原始 JavaScript 请求体；按 `web-access` 的 CDP API 格式重试。若 target 已失效，关闭或忽略它并新建自己的后台页。
+8. 完成后用 `GET /close?target=<targetId>` 关闭自己创建的后台标签页。公开视频页面可读取标题、发布日期、时长等可见元数据；不得订阅、评论、点赞、上传或执行其他写操作，除非用户明确要求。
+
 ## Iteration and Private Inputs
 
 离线 Evaluator–Optimizer Loop 只能使用本机私有输入运行。`loop/<run-id>` 及 run worktree 仅是本地实验产物，不得推送。实验结论需要进入公开代码时，只提取最小且不含私有数据的 prompt/code delta，放入新的 `feat/*` 分支并走完整 CI/PR。
