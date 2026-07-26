@@ -60,6 +60,20 @@ class PublicBoundaryTests(unittest.TestCase):
         self.assertIn("PR #8", release_log)
         self.assertNotIn("@gmail.com", release_log)
 
+    def test_agent_rules_define_a_safe_cdp_browser_protocol(self):
+        for name in ("AGENTS.md", "CLAUDE.md"):
+            rules = (ROOT / name).read_text(encoding="utf-8")
+
+            self.assertIn("直接操作浏览器", rules)
+            self.assertIn("web-access", rules)
+            self.assertIn("--noproxy '*'", rules)
+            self.assertIn("/health", rules)
+            self.assertIn("后台标签页", rules)
+            self.assertIn("不得读取、导出或复述 Cookie", rules)
+            self.assertIn("不使用桌面鼠标或键盘控制", rules)
+            self.assertIn("POST /eval", rules)
+            self.assertIn("400", rules)
+
 
 if __name__ == "__main__":
     unittest.main()
