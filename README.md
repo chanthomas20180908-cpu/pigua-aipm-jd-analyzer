@@ -12,15 +12,41 @@
 - 仅陈述能由当前公开代码与测试验证的能力。
 -->
 
-# 劈瓜｜AI PM JD Analyzer
+# Pigua | AI PM JD Analyzer
 
-一个面向 AI 产品经理、Agent 和数据平台岗位的本地 Agent Skill：将 JD 转化为岗位业务模型、风险判断和面试追问。
+An open-source, local-first Agent Skill for AI product manager, Agent, and data-platform job descriptions. It turns a JD into an evidence-grounded business model, risk signals, and interview questions.
+
+面向 AI 产品经理、Agent 和数据平台岗位的本地 Agent Skill：将 JD 转化为岗位业务模型、风险判断和面试追问。
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776ab)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688)](https://fastapi.tiangolo.com/)
 [![CI](https://github.com/chanthomas20180908-cpu/pigua-aipm-jd-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/chanthomas20180908-cpu/pigua-aipm-jd-analyzer/actions/workflows/ci.yml)
 
 ![劈瓜项目预览](static/assets/hero-screenshot.png)
+
+## English quick start
+
+The Skill package lives in `skills/ai-pm-jd-analyzer/`. It runs locally, needs no API key, does not browse the web, and does not call this repository's Web API.
+
+```bash
+# Codex
+cp -R skills/ai-pm-jd-analyzer ~/.codex/skills/
+
+# Claude Code
+cp -R skills/ai-pm-jd-analyzer ~/.claude/skills/
+```
+
+Start a new session and use a prompt such as:
+
+```text
+Use $ai-pm-jd-analyzer to analyze the following job description. Write the report in English:
+
+[paste the job description]
+```
+
+The default workflow saves `report.md` and `report.html` under `.agents/ai-pm-jd-reports/` in the current working directory. Use a private local working directory for real job descriptions; do not run it from a company repository, synced folder, or other managed location.
+
+The Chinese documentation and full project details continue below.
 
 ## 工程实现与验证边界
 

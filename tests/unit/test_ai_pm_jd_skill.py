@@ -35,6 +35,7 @@ class AiPmJdSkillTests(unittest.TestCase):
     def test_skill_has_valid_identity_and_all_references(self):
         self.assertTrue(self.skill.startswith("---\nname: ai-pm-jd-analyzer\n"))
         self.assertIn("description:", self.skill.split("---", 2)[1])
+        self.assertIn("license: MIT", self.skill.split("---", 2)[1])
         for name in self.references:
             self.assertIn(f"references/{name}", self.skill)
         self.assertIn("references/full-model-schema.json", self.skill)

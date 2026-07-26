@@ -1,6 +1,7 @@
 ---
 name: ai-pm-jd-analyzer
 description: Analyze AI product manager, Agent, data-platform, and related product job descriptions using an evidence-based business meta-model. Use when an agent needs to explain what a JD actually requires, model value streams, work items, entities and capabilities, identify pseudo-AI or role-overload signals, or draft targeted interview questions. Do not use for resume matching, job application decisions, company web research, or running the repository API.
+license: MIT
 ---
 
 <!--
