@@ -54,8 +54,10 @@ class PublicBoundaryTests(unittest.TestCase):
 
         self.assertIn("# Release Log", release_log)
         self.assertIn("https://skillmd.ai/skills/ai-pm-jd-analyzer/", release_log)
+        self.assertIn("distribution/skillmd-ai-pm-jd-analyzer.md", release_log)
         self.assertIn("PR #6", release_log)
         self.assertIn("PR #7", release_log)
+        self.assertIn("PR #8", release_log)
         self.assertNotIn("@gmail.com", release_log)
 
 
