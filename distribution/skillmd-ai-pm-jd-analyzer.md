@@ -8,9 +8,19 @@ license: MIT
 
 This is the **standalone distribution edition** of AI PM JD Analyzer. It is designed for a single-file Skill marketplace download.
 
-The complete repository edition includes a validated schema, detailed reference model, local HTML renderer, and private iteration bootstrap:
+## Need the complete version?
 
-https://github.com/chanthomas20180908-cpu/pigua-aipm-jd-analyzer
+**[Open the complete repository edition](https://github.com/chanthomas20180908-cpu/pigua-aipm-jd-analyzer)** for the validated schema, detailed reference model, local HTML renderer, private iteration bootstrap, and full report contract.
+
+Install the complete version from a repository checkout:
+
+```bash
+# Codex
+cp -R skills/ai-pm-jd-analyzer ~/.codex/skills/
+
+# Claude Code
+cp -R skills/ai-pm-jd-analyzer ~/.claude/skills/
+```
 
 ## Boundaries
 
