@@ -49,6 +49,15 @@ class PublicBoundaryTests(unittest.TestCase):
             violations,
         )
 
+    def test_release_log_is_public_and_excludes_private_operating_details(self):
+        release_log = (ROOT / "RELEASES.md").read_text(encoding="utf-8")
+
+        self.assertIn("# Release Log", release_log)
+        self.assertIn("https://skillmd.ai/skills/ai-pm-jd-analyzer/", release_log)
+        self.assertIn("PR #6", release_log)
+        self.assertIn("PR #7", release_log)
+        self.assertNotIn("@gmail.com", release_log)
+
 
 if __name__ == "__main__":
     unittest.main()
