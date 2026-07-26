@@ -52,6 +52,30 @@
 - **把判断做成可见的产品**：实现 D3 关系图、流程图、CRUD 矩阵、结果导出与本地历史记录。
 - **建立可验证闭环**：用冻结前端样例、公开边界检查和离线 Evaluator–Optimizer Loop 保护迭代质量。
 
+## English quick start
+
+The Skill package lives in `skills/ai-pm-jd-analyzer/`. It runs locally, needs no API key, does not browse the web, and does not call this repository's Web API.
+
+```bash
+# Codex
+cp -R skills/ai-pm-jd-analyzer ~/.codex/skills/
+
+# Claude Code
+cp -R skills/ai-pm-jd-analyzer ~/.claude/skills/
+```
+
+Start a new session and use a prompt such as:
+
+```text
+Use $ai-pm-jd-analyzer to analyze the following job description. Write the report in English:
+
+[paste the job description]
+```
+
+The default workflow saves `report.md` and `report.html` under `.agents/ai-pm-jd-reports/` in the current working directory. Use a private local working directory for real job descriptions; do not run it from a company repository, synced folder, or other managed location.
+
+The Chinese documentation and full project details continue below.
+
 ## 工程实现与验证边界
 
 - **双轨评测机制**：离线 Evaluator–Optimizer Loop 支持将回归集与能力集分开评估，并用回归保护避免能力爬坡掩盖退化；公开仓库不包含私有评测数据。
