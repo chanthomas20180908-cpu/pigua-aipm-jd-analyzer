@@ -120,7 +120,12 @@ class AiPmJdSkillTests(unittest.TestCase):
         distribution = SKILLMD_DISTRIBUTION_FILE.read_text(encoding="utf-8")
         self.assertTrue(distribution.startswith("---\nname: ai-pm-jd-analyzer\n"))
         self.assertIn("standalone distribution edition", distribution)
-        self.assertIn("https://github.com/chanthomas20180908-cpu/pigua-aipm-jd-analyzer", distribution)
+        self.assertIn(
+            "[Open the complete repository edition](https://github.com/chanthomas20180908-cpu/pigua-aipm-jd-analyzer)",
+            distribution,
+        )
+        self.assertIn("cp -R skills/ai-pm-jd-analyzer ~/.codex/skills/", distribution)
+        self.assertIn("cp -R skills/ai-pm-jd-analyzer ~/.claude/skills/", distribution)
         self.assertIn("does not create local files", distribution)
         self.assertIn("does not require bundled references", distribution)
         self.assertNotIn("references/", distribution)
